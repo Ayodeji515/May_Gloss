@@ -12,39 +12,40 @@ import {
   Plus, 
   Minus, 
   Trash2, 
-  ArrowLeft,
-  CheckCircle2,
-  Phone,
-  CreditCard,
-  Search,
-  Sun,
-  Moon,
-  Star,
-  Quote,
-  Leaf,
-  Droplets,
-  Sparkles,
-  Camera,
-  Heart,
-  Loader2,
-  Bell,
-  HelpCircle,
-  Truck,
-  RotateCcw,
-  ShieldCheck,
-  ChevronRight,
-  Maximize2,
-  ChevronDown,
-  Info,
-  Zap,
-  Banknote,
-  Mic,
-  MicOff,
-  Send,
-  Sparkle,
-  Globe,
-  Award,
-  FlaskConical
+  ArrowLeft, 
+  CheckCircle2, 
+  Phone, 
+  CreditCard, 
+  Search, 
+  Sun, 
+  Moon, 
+  Star, 
+  Quote, 
+  Leaf, 
+  Droplets, 
+  Sparkles, 
+  Camera, 
+  Heart, 
+  Loader2, 
+  Bell, 
+  HelpCircle, 
+  Truck, 
+  RotateCcw, 
+  ShieldCheck, 
+  ChevronRight, 
+  Maximize2, 
+  ChevronDown, 
+  Info, 
+  Zap, 
+  Banknote, 
+  Mic, 
+  MicOff, 
+  Send, 
+  Sparkle, 
+  Globe, 
+  Award, 
+  FlaskConical,
+  Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI } from "@google/genai";
@@ -96,6 +97,8 @@ const BANK_DETAILS = {
   accountNumber: "1023948576",
   bankName: "Zenith Radiant Bank"
 };
+
+const SYSTEM_INSTRUCTION = "You are a luxury beauty consultant for MayGloss. You are elegant, helpful, and an expert in lip hydration and aesthetics. You recommend MayGloss products (Amethyst Glow, Dusty Rose Matte, Icy Plumper, Berry Nectar Oil, Twilight Sparkle, Champagne Satin) based on user needs. Keep responses concise, helpful, and high-end.";
 
 // --- Mock Data ---
 
@@ -268,7 +271,7 @@ const ScrollToTop = () => {
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={scroll} className="fixed bottom-8 right-8 z-[150] p-4 rounded-full bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800 text-indigo-950 dark:text-purple-400">
+        <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={scroll} className="fixed bottom-24 right-8 z-[150] p-4 rounded-full bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800 text-indigo-950 dark:text-purple-400">
           <ChevronUp size={24} />
         </motion.button>
       )}
@@ -276,7 +279,186 @@ const ScrollToTop = () => {
   );
 };
 
-// --- ProductCard: Enhanced for full-card clickability ---
+// --- AI Components ---
+
+const ChatInterface = ({ messages, setMessages, loading, setLoading, input, setInput, isRecording, setIsRecording }: any) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
+    const userMsg: ChatMessage = { role: 'user', parts: text };
+    setMessages((prev: any) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-pro-preview',
+        contents: [...messages, userMsg].map(m => ({ role: m.role, parts: [{ text: m.parts }] })),
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION
+        }
+      });
+      setMessages((prev: any) => [...prev, { role: 'model', parts: response.text || "I'm sorry, I couldn't process that. Try again?" }]);
+    } catch (e) {
+      setMessages((prev: any) => [...prev, { role: 'model', parts: "I'm having a little trouble connecting to my beauty lab. Please try again in a moment." }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startVoice = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.onstart = () => setIsRecording(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      sendMessage(transcript);
+    };
+    recognition.onend = () => setIsRecording(false);
+    recognition.start();
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-grow overflow-y-auto mb-6 pr-2 scrollbar-hide space-y-6">
+        {messages.map((m: any, i: number) => (
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] px-5 py-3 rounded-3xl ${m.role === 'user' ? 'bg-indigo-950 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-indigo-950 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700'}`}>
+              <p className="text-sm leading-relaxed">{m.parts}</p>
+            </div>
+          </div>
+        ))}
+        {loading && <div className="flex justify-start"><LoadingSpinner size={14} text="Consulting..." /></div>}
+        <div ref={scrollRef} />
+      </div>
+
+      <div className="flex gap-3 items-center bg-white dark:bg-slate-900 p-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm focus-within:ring-2 ring-purple-100 transition-all">
+        <input 
+          value={input} 
+          onChange={(e) => setInput(e.target.value)} 
+          onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
+          placeholder="Type your radiance question..." 
+          className="flex-grow bg-transparent px-4 py-2 outline-none text-sm placeholder:text-slate-400"
+        />
+        <button onClick={startVoice} className={`p-2.5 rounded-full transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400'}`}>
+          {isRecording ? <MicOff size={18} /> : <Mic size={18} />}
+        </button>
+        <button onClick={() => sendMessage(input)} className="p-2.5 bg-indigo-950 text-white rounded-full hover:scale-110 active:scale-95 transition-all shadow-md">
+          <Send size={18} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- Page & Widget AI Components ---
+
+const AIConsultant = () => {
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: 'model', parts: "Welcome to the full consultation experience. I'm your MayGloss Beauty Expert. How can I refine your look today?" }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+
+  return (
+    <div className="pt-40 pb-32 px-6 max-w-5xl mx-auto flex flex-col h-[85vh]">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4 mb-10">
+        <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-3xl text-purple-600 shadow-sm"><Sparkle size={40} /></div>
+        <div>
+          <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white">Beauty Concierge</h1>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.3em] mt-1">Personalized Shade Mastery</p>
+        </div>
+      </motion.div>
+
+      <div className="flex-grow bg-white dark:bg-slate-900 rounded-[3.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 p-10 flex flex-col overflow-hidden">
+        <ChatInterface 
+          messages={messages} 
+          setMessages={setMessages} 
+          loading={loading} 
+          setLoading={setLoading} 
+          input={input} 
+          setInput={setInput} 
+          isRecording={isRecording} 
+          setIsRecording={setIsRecording} 
+        />
+      </div>
+    </div>
+  );
+};
+
+const GlobalChatWidget = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: 'model', parts: "Hi! Need a quick shade match or ingredient info? I'm here to help." }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+
+  return (
+    <div className="fixed bottom-8 right-8 z-[200]">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.9, transformOrigin: 'bottom right' }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="absolute bottom-20 right-0 w-[350px] md:w-[400px] h-[550px] bg-white dark:bg-slate-950 shadow-[0_20px_50px_rgba(0,0,0,0.2)] rounded-[2.5rem] border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col"
+          >
+            <div className="p-6 bg-indigo-950 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-xl"><Bot size={20} /></div>
+                <div>
+                  <h3 className="font-bold text-sm">MayGloss AI</h3>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                    <span className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">Online</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
+            </div>
+            <div className="flex-grow p-6 bg-stone-50/50 dark:bg-slate-900/50 overflow-hidden">
+              <ChatInterface 
+                messages={messages} 
+                setMessages={setMessages} 
+                loading={loading} 
+                setLoading={setLoading} 
+                input={input} 
+                setInput={setInput} 
+                isRecording={isRecording} 
+                setIsRecording={setIsRecording} 
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="p-5 rounded-full shadow-2xl text-white transition-all hover:scale-110 active:scale-95 flex items-center justify-center relative group" 
+        style={{ backgroundColor: BRAND_PURPLE }}
+      >
+        <div className="absolute inset-0 rounded-full bg-purple-400 blur-lg opacity-0 group-hover:opacity-40 transition-opacity" />
+        {isOpen ? <X size={28} /> : <MessageCircle size={28} />}
+      </button>
+    </div>
+  );
+};
+
+// --- Main Components ---
 
 const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: any) => (
   <motion.div 
@@ -305,108 +487,6 @@ const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: any) => (
     </div>
   </motion.div>
 );
-
-// --- AI Consultant Component ---
-
-const AIConsultant = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', parts: "Hello, I'm your MayGloss Beauty Consultant. How can I help you find your perfect radiance today?" }
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
-    const userMsg: ChatMessage = { role: 'user', parts: text };
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setLoading(true);
-
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: [...messages, userMsg].map(m => ({ role: m.role, parts: [{ text: m.parts }] })),
-        config: {
-          systemInstruction: "You are a luxury beauty consultant for MayGloss. You are elegant, helpful, and an expert in lip hydration and aesthetics. You recommend MayGloss products (Amethyst Glow, Dusty Rose Matte, Icy Plumper, Berry Nectar Oil, Twilight Sparkle, Champagne Satin) based on user needs. Keep responses concise and high-end."
-        }
-      });
-      setMessages(prev => [...prev, { role: 'model', parts: response.text || "I'm sorry, I couldn't process that. Try again?" }]);
-    } catch (e) {
-      setMessages(prev => [...prev, { role: 'model', parts: "Our beauty server is currently resting. Please try again in a moment." }]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const startVoice = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Voice recognition is not supported in this browser.");
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.onstart = () => setIsRecording(true);
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
-      sendMessage(transcript);
-    };
-    recognition.onend = () => setIsRecording(false);
-    recognition.start();
-  };
-
-  return (
-    <div className="pt-40 pb-32 px-6 max-w-4xl mx-auto flex flex-col h-[80vh]">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-2xl text-purple-600"><Sparkle size={32} /></div>
-        <div>
-          <h1 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white">AI Beauty Guide</h1>
-          <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Personalized Recommendations</p>
-        </div>
-      </div>
-
-      <div className="flex-grow bg-white dark:bg-slate-900 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-800 p-8 overflow-y-auto mb-6 scroll-smooth">
-        <div className="flex flex-col gap-6">
-          {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] px-6 py-4 rounded-3xl ${m.role === 'user' ? 'bg-indigo-950 text-white' : 'bg-slate-100 dark:bg-slate-800 text-indigo-950 dark:text-slate-200 shadow-sm'}`}>
-                <p className="text-sm leading-relaxed">{m.parts}</p>
-              </div>
-            </div>
-          ))}
-          {loading && <div className="flex justify-start"><LoadingSpinner size={16} text="Consulting our experts..." /></div>}
-          <div ref={scrollRef} />
-        </div>
-      </div>
-
-      <div className="flex gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-full border border-slate-100 dark:border-slate-800 shadow-lg group focus-within:ring-2 ring-purple-200">
-        <input 
-          value={input} 
-          onChange={(e) => setInput(e.target.value)} 
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-          placeholder="Ask about shades, ingredients, or rituals..." 
-          className="flex-grow bg-transparent px-4 py-2 outline-none text-sm placeholder:text-slate-300"
-        />
-        <button onClick={startVoice} className={`p-3 rounded-full transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'}`}>
-          {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-        </button>
-        <button onClick={() => sendMessage(input)} className="p-3 bg-indigo-950 text-white rounded-full hover:scale-110 transition-transform shadow-lg">
-          <Send size={20} />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// --- Navigation ---
 
 const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }: any) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -492,8 +572,6 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
   );
 };
 
-// --- Page Content & Pages ---
-
 const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
   return (
     <div className="bg-stone-50 dark:bg-slate-950">
@@ -513,7 +591,7 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
         <div className="text-center mb-20">
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 mb-4 block">Seasonal Edit</span>
           <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-4">Our Signature Selection</h2>
-          <p className="text-slate-500 max-w-md mx-auto">Discover the shades that captured the hearts of our community.</p>
+          <p className="text-slate-500 max-md max-w-md mx-auto">Discover the shades that captured the hearts of our community.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {PRODUCTS.slice(0, 3).map(p => (
@@ -522,7 +600,6 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
         </div>
       </section>
 
-      {/* Brand Values Grid */}
       <section className="py-32 bg-indigo-950 text-white rounded-[4rem] mx-4 mb-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-20 text-center">
           <div className="group">
@@ -1016,6 +1093,7 @@ const App = () => {
         <div className="text-center text-[10px] font-bold uppercase tracking-[0.4em] text-slate-300">© {new Date().getFullYear()} MayGloss Beauty. All Radiant Rights Reserved.</div>
       </footer>
 
+      <GlobalChatWidget />
       <ScrollToTop />
       <NotificationToast notifications={notifications} remove={id => setNotifications(prev => prev.filter(n => n.id !== id))} />
     </div>
