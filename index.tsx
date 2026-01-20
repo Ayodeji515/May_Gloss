@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
   ShoppingBag, 
@@ -31,7 +31,9 @@ import {
   HelpCircle,
   Truck,
   RotateCcw,
-  ShieldCheck
+  ShieldCheck,
+  ChevronRight,
+  Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -44,6 +46,7 @@ interface Product {
   category: 'Shine' | 'Matte' | 'Plumper' | 'Tint';
   description: string;
   image: string;
+  images: string[]; // Added for gallery support
   isBestSeller?: boolean;
 }
 
@@ -77,8 +80,13 @@ const PRODUCTS: Product[] = [
     name: 'Amethyst Glow',
     price: 18.00,
     category: 'Shine',
-    description: 'A sophisticated lavender-tinted gloss that adapts to your natural lip pH. Infused with cold-pressed grape seed oil for a non-sticky finish.',
+    description: 'A sophisticated lavender-tinted gloss that adapts to your natural lip pH. Infused with cold-pressed grape seed oil for a non-sticky finish. This multi-tasking formula provides high shine while deeply nourishing the delicate lip barrier.',
     image: 'https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800'
+    ],
     isBestSeller: true
   },
   {
@@ -86,8 +94,13 @@ const PRODUCTS: Product[] = [
     name: 'Dusty Rose Matte',
     price: 22.00,
     category: 'Matte',
-    description: 'The perfect everyday neutral. Our whipped matte formula provides full-coverage pigment with a weightless feel.',
+    description: 'The perfect everyday neutral. Our whipped matte formula provides full-coverage pigment with a weightless feel. Designed to stay all day without drying or cracking.',
     image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?auto=format&fit=crop&q=80&w=800'
+    ],
     isBestSeller: true
   },
   {
@@ -95,32 +108,52 @@ const PRODUCTS: Product[] = [
     name: 'Icy Plumper',
     price: 24.00,
     category: 'Plumper',
-    description: 'Instant volume with a cooling sensation. Micro-reflecting pearls make lips appear fuller instantly.',
-    image: 'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800'
+    description: 'Instant volume with a cooling sensation. Micro-reflecting pearls make lips appear fuller instantly while cross-linked hyaluronic acid ensures long-term hydration.',
+    image: 'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1557053910-d9eaba703fa8?auto=format&fit=crop&q=80&w=800'
+    ]
   },
   {
     id: '4',
     name: 'Berry Nectar Oil',
     price: 20.00,
     category: 'Tint',
-    description: 'A cushiony lip oil that drenches lips in moisture. Leaves a delicate berry stain that lasts.',
-    image: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800'
+    description: 'A cushiony lip oil that drenches lips in moisture. Leaves a delicate berry stain that lasts. Perfect for the "clean girl" aesthetic.',
+    image: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1601054704854-1a2e79dea4d3?auto=format&fit=crop&q=80&w=800'
+    ]
   },
   {
     id: '5',
     name: 'Twilight Sparkle',
     price: 19.00,
     category: 'Shine',
-    description: 'Multi-dimensional glitter suspended in a clear base. Designed to be worn alone or layered.',
-    image: 'https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&q=80&w=800'
+    description: 'Multi-dimensional glitter suspended in a clear base. Designed to be worn alone for a starry effect or layered over your favorite lipstick.',
+    image: 'https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800'
+    ]
   },
   {
     id: '6',
     name: 'Champagne Satin',
     price: 21.00,
     category: 'Shine',
-    description: 'A creamy, satin-finish gloss with warm gold undertones. It captures the essence of golden hour.',
+    description: 'A creamy, satin-finish gloss with warm gold undertones. It captures the essence of golden hour in a single swipe.',
     image: 'https://images.unsplash.com/photo-1631214499558-c8cc25624941?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1631214499558-c8cc25624941?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800'
+    ],
     isBestSeller: true
   }
 ];
@@ -259,8 +292,8 @@ const Navbar = ({
             <button 
               key={item.path}
               onClick={() => handleNav(item.path)} 
-              className={`hover:text-indigo-950 dark:hover:text-purple-300 transition-colors ${currentPath === item.path ? 'text-indigo-950 border-b-2' : ''}`} 
-              style={{ borderBottomColor: currentPath === item.path ? BRAND_PURPLE : 'transparent' }}
+              className={`hover:text-indigo-950 dark:hover:text-purple-300 transition-colors ${currentPath.startsWith(item.path) ? 'text-indigo-950 border-b-2' : ''}`} 
+              style={{ borderBottomColor: currentPath.startsWith(item.path) ? BRAND_PURPLE : 'transparent' }}
             >
               {item.label}
             </button>
@@ -296,7 +329,7 @@ const Navbar = ({
                   key={item.path}
                   onClick={() => handleNav(item.path)}
                   className="text-3xl font-serif font-bold text-indigo-950 dark:text-white"
-                  style={{ color: currentPath === item.path ? BRAND_PURPLE : undefined }}
+                  style={{ color: currentPath.startsWith(item.path) ? BRAND_PURPLE : undefined }}
                 >
                   {item.label}
                 </button>
@@ -311,9 +344,8 @@ const Navbar = ({
 
 // --- Page Components ---
 
-// Fix: Use React.FC to handle the 'key' prop correctly in TypeScript JSX.
-const ProductCard: React.FC<{ product: Product, addToCart: (p: Product) => void, isAdding: boolean }> = ({ product, addToCart, isAdding }) => (
-  <div className="group cursor-pointer">
+const ProductCard: React.FC<{ product: Product, addToCart: (p: Product) => void, isAdding: boolean, onViewDetails: (p: Product) => void }> = ({ product, addToCart, isAdding, onViewDetails }) => (
+  <div onClick={() => onViewDetails(product)} className="group cursor-pointer">
     <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-50 dark:bg-slate-900 aspect-[4/5] mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-700">
       <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
       <div className="absolute inset-0 bg-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -323,7 +355,7 @@ const ProductCard: React.FC<{ product: Product, addToCart: (p: Product) => void,
         style={{ color: isAdding ? 'white' : BRAND_PURPLE, backgroundColor: isAdding ? BRAND_PURPLE : undefined }}
       >
         {isAdding ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 size={16} /></motion.div> : <ShoppingBag size={16} />}
-        {isAdding ? "Adding..." : `Add To Bag — $${product.price.toFixed(2)}`}
+        {isAdding ? "Adding..." : `Quick Add — $${product.price.toFixed(2)}`}
       </button>
     </div>
     <div className="px-2 text-center">
@@ -336,107 +368,178 @@ const ProductCard: React.FC<{ product: Product, addToCart: (p: Product) => void,
   </div>
 );
 
-const HomePage = ({ onNavigate, addToCart, addingId }: { onNavigate: (p: string) => void, addToCart: (p: Product) => void, addingId: string | null }) => {
-  const bestSellers = PRODUCTS.filter(p => p.isBestSeller);
+// --- NEW Component: Product Detail Page ---
+const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: { product: Product, addToCart: (p: Product, q: number) => void, addingId: string | null, onNavigate: (p: string) => void }) => {
+  const [activeImg, setActiveImg] = useState(product.images[0]);
+  const [quantity, setQuantity] = useState(1);
+  const [zoomPos, setZoomPos] = useState({ x: 0, y: 0, show: false });
+  const zoomRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!zoomRef.current) return;
+    const { left, top, width, height } = zoomRef.current.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - top) / height) * 100;
+    setZoomPos({ x, y, show: true });
+  };
 
   return (
-    <div className="animate-in fade-in duration-1000 bg-white dark:bg-slate-950">
-      <section className="relative h-auto min-h-[85vh] py-40 md:py-64 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900">
-        <div className="relative z-10 text-center max-w-4xl px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <span className="inline-block px-4 py-1.5 rounded-full bg-white dark:bg-purple-900/30 font-bold tracking-[0.4em] uppercase text-[10px] mb-8 border border-purple-100" style={{ color: BRAND_PURPLE }}>
-              High-Shine Botanical Hydration
-            </span>
-            <h1 className="text-6xl md:text-9xl font-serif font-bold text-indigo-950 dark:text-white mb-8 leading-[0.85]">
-              Pure <br/><span className="italic font-normal">Luminance.</span>
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed">
-              Experience non-sticky, mirror-like shine infused with cold-pressed botanical oils. Designed for kissable lips, everyday.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={() => onNavigate('products')} className="w-full sm:w-auto text-white px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-slate-800 transition-all shadow-2xl" style={{ backgroundColor: BRAND_PURPLE }}>
-                Shop Collection
+    <div className="pt-32 pb-32 px-4 max-w-7xl mx-auto">
+      {/* Breadcrumbs */}
+      <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-12">
+        <button onClick={() => onNavigate('home')} className="hover:text-indigo-950">Home</button>
+        <ChevronRight size={10} />
+        <button onClick={() => onNavigate('products')} className="hover:text-indigo-950">Shop</button>
+        <ChevronRight size={10} />
+        <span className="text-indigo-950 dark:text-white">{product.name}</span>
+      </nav>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+        {/* Gallery */}
+        <div className="flex flex-col-reverse md:flex-row gap-6">
+          {/* Thumbnails */}
+          <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto">
+            {product.images.map((img, i) => (
+              <button 
+                key={i} 
+                onClick={() => setActiveImg(img)}
+                className={`w-20 h-20 md:w-24 md:h-32 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${activeImg === img ? 'border-purple-400 scale-95 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                style={{ borderColor: activeImg === img ? BRAND_PURPLE : 'transparent' }}
+              >
+                <img src={img} className="w-full h-full object-cover" alt={`${product.name} view ${i}`} />
               </button>
-              <button onClick={() => onNavigate('story')} className="w-full sm:w-auto bg-white/80 dark:bg-slate-800 backdrop-blur-md text-indigo-950 dark:text-white border border-slate-100 dark:border-slate-700 px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-slate-50 transition-all">
-                The Mission
-              </button>
-            </div>
-          </motion.div>
-        </div>
-        {/* Floating elements for visual interest since bg image is gone */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-200/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-pulse delay-700" />
-      </section>
-
-      {/* Botanical Spotlight */}
-      <section className="py-32 px-4 bg-slate-50 dark:bg-slate-900 rounded-[4rem] mx-4 mb-32 overflow-hidden relative">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-            <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }}>
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-4 block" style={{ color: BRAND_PURPLE }}>Ingredient Integrity</span>
-                <h2 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-10 leading-tight">Hydration Meets <br/> Botanical Science</h2>
-                <div className="space-y-8">
-                    <div className="flex gap-6 items-start">
-                        <div className="p-4 rounded-3xl bg-white dark:bg-slate-800 shadow-sm" style={{ color: BRAND_PURPLE }}><Leaf size={24} /></div>
-                        <div>
-                            <h4 className="font-bold text-lg mb-2 dark:text-white">Cold-Pressed Grape Seed Oil</h4>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Antioxidant-rich protection for sensitive lip skin.</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                        <div className="p-4 rounded-3xl bg-white dark:bg-slate-800 shadow-sm" style={{ color: BRAND_PURPLE }}><Droplets size={24} /></div>
-                        <div>
-                            <h4 className="font-bold text-lg mb-2 dark:text-white">Hyaluronic Spheres</h4>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Deeply penetrates for instant volume and moisture.</p>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-            <div className="relative">
-                <img src="https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=1000" className="w-full h-[600px] object-cover rounded-[3rem] shadow-2xl relative z-10" alt="Botanical Ingredients" />
-            </div>
-        </div>
-      </section>
-
-      {/* Featured Grid */}
-      <section className="py-32 px-4 max-w-7xl mx-auto">
-        <div className="text-center mb-20">
-          <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-4">The Essentials</h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">Hand-picked by our beauty experts for every skin tone.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {bestSellers.map(product => (
-            <ProductCard key={product.id} product={product} addToCart={addToCart} isAdding={addingId === product.id} />
-          ))}
-        </div>
-      </section>
-
-      {/* Refined Reviews Section */}
-      <section className="py-32 px-4 bg-purple-50 dark:bg-slate-900 rounded-[4rem] mx-4 mb-32">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-6">Community Stories</h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">Join thousands of women who've simplified their beauty routine with MayGloss.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-12">
-            {REVIEWS.map(review => (
-              <div key={review.id} className="bg-white dark:bg-slate-800 p-12 rounded-[3rem] shadow-xl hover:-translate-y-2 transition-transform duration-500 flex flex-col items-center text-center">
-                <img src={review.avatar} className="w-20 h-20 rounded-full object-cover mb-8 ring-4 ring-purple-100 dark:ring-purple-900/30" alt={review.name} />
-                <Quote size={40} className="text-purple-100 dark:text-slate-700 mb-6" />
-                <p className="mb-8 text-slate-600 dark:text-slate-300 italic text-lg leading-relaxed font-serif">"{review.text}"</p>
-                <div className="mt-auto">
-                    <StarRating rating={review.rating} />
-                    <h4 className="font-bold text-indigo-950 dark:text-white mt-4">{review.name}</h4>
-                </div>
-              </div>
             ))}
           </div>
+
+          {/* Main Image with Zoom */}
+          <div 
+            ref={zoomRef}
+            className="flex-grow relative aspect-[4/5] rounded-[3rem] overflow-hidden bg-slate-50 dark:bg-slate-900 cursor-zoom-in"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setZoomPos(p => ({ ...p, show: false }))}
+          >
+            <motion.img 
+              key={activeImg}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              src={activeImg} 
+              className="w-full h-full object-cover"
+              alt={product.name}
+            />
+            
+            {/* Zoom Overlay */}
+            <AnimatePresence>
+              {zoomPos.show && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 pointer-events-none z-10"
+                  style={{
+                    backgroundImage: `url(${activeImg})`,
+                    backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
+                    backgroundSize: '250%'
+                  }}
+                />
+              )}
+            </AnimatePresence>
+
+            <div className="absolute top-6 right-6 p-4 bg-white/50 backdrop-blur-md rounded-full text-indigo-950">
+              <Maximize2 size={20} />
+            </div>
+          </div>
+        </div>
+
+        {/* Info Column */}
+        <div className="flex flex-col justify-center">
+          <div className="mb-10">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-4 block" style={{ color: BRAND_PURPLE }}>
+              Botanical Beauty / {product.category}
+            </span>
+            <h1 className="text-5xl md:text-6xl font-serif font-bold text-indigo-950 dark:text-white mb-6 leading-tight">
+              {product.name}
+            </h1>
+            <div className="flex items-center gap-6 mb-8">
+              <span className="text-3xl font-bold text-indigo-950 dark:text-purple-400" style={{ color: BRAND_PURPLE }}>
+                ${product.price.toFixed(2)}
+              </span>
+              <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex items-center gap-2">
+                <StarRating rating={5} />
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(24 Reviews)</span>
+              </div>
+            </div>
+            <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed mb-10 italic">
+              "{product.description}"
+            </p>
+          </div>
+
+          <div className="space-y-8 mb-12">
+            <div className="flex items-center gap-8">
+              <span className="text-xs font-bold uppercase tracking-widest text-indigo-950 dark:text-slate-300">Quantity</span>
+              <div className="flex items-center gap-6 bg-slate-50 dark:bg-slate-800 rounded-full px-6 py-3 border border-slate-100 dark:border-slate-700">
+                <button 
+                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  className="text-slate-400 hover:text-indigo-950 transition-colors"
+                >
+                  <Minus size={16} />
+                </button>
+                <span className="font-bold text-lg w-6 text-center">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity(q => q + 1)}
+                  className="text-slate-400 hover:text-indigo-950 transition-colors"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => addToCart(product, quantity)}
+              disabled={addingId === product.id}
+              className="w-full text-white py-6 rounded-[2rem] font-bold shadow-2xl hover:bg-slate-800 transition-all text-xs tracking-[0.2em] uppercase flex items-center justify-center gap-4 active:scale-95 disabled:opacity-70"
+              style={{ backgroundColor: BRAND_PURPLE }}
+            >
+              {addingId === product.id ? <LoadingSpinner size={16} /> : <ShoppingBag size={18} />}
+              {addingId === product.id ? "Processing..." : `Add to Bag — $${(product.price * quantity).toFixed(2)}`}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+              <Truck size={18} className="text-slate-400" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Free Express Delivery</span>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+              <RotateCcw size={18} className="text-slate-400" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">30-Day Glowing Returns</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recommended Section */}
+      <section className="mt-40">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-serif font-bold text-indigo-950 dark:text-white">Complete Your Routine</h2>
+          <p className="text-slate-400 mt-2">Muses also adored these signature shades</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {PRODUCTS.filter(p => p.id !== product.id).slice(0, 3).map(p => (
+             <ProductCard 
+                key={p.id} 
+                product={p} 
+                addToCart={(prod) => addToCart(prod, 1)} 
+                isAdding={addingId === p.id} 
+                onViewDetails={(prod) => onNavigate(`product-${prod.id}`)}
+             />
+          ))}
         </div>
       </section>
     </div>
   );
 };
 
-// --- FAQ Page ---
 const FAQPage = () => {
   const [open, setOpen] = useState<number | null>(0);
   const faqs = [
@@ -471,7 +574,6 @@ const FAQPage = () => {
   );
 };
 
-// --- Legal/Info Pages ---
 const InfoPage = ({ title, content }: { title: string, content: React.ReactNode }) => (
   <div className="pt-32 pb-32 px-6 max-w-4xl mx-auto">
     <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-12">{title}</h1>
@@ -481,7 +583,6 @@ const InfoPage = ({ title, content }: { title: string, content: React.ReactNode 
   </div>
 );
 
-// Fix: Implement missing ScrollToTop component to allow users to navigate back to top.
 const ScrollToTop = () => {
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -506,6 +607,168 @@ const ScrollToTop = () => {
   );
 };
 
+// --- FIX: Added missing HomePage component ---
+const HomePage = ({ onNavigate, addToCart, addingId }: { onNavigate: (p: string) => void, addToCart: (p: Product) => void, addingId: string | null }) => {
+  const bestSellers = PRODUCTS.filter(p => p.isBestSeller);
+
+  return (
+    <div>
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=2000" 
+            className="w-full h-full object-cover" 
+            alt="Hero Background"
+          />
+          <div className="absolute inset-0 bg-indigo-950/30 backdrop-blur-[2px]" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-20">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="max-w-2xl"
+          >
+            <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white mb-6 block drop-shadow-lg">
+              Est. 2024 / Botanical Alchemy
+            </span>
+            <h1 className="text-7xl md:text-9xl font-serif font-bold text-white mb-8 leading-tight drop-shadow-2xl">
+              Pure <br />
+              <span className="italic" style={{ color: BRAND_PURPLE }}>Luminance.</span>
+            </h1>
+            <p className="text-xl text-white/90 mb-12 max-w-lg leading-relaxed drop-shadow-md">
+              Discover high-performance lipcare infused with cold-pressed botanicals and mirror-like shine. 
+              Non-sticky. Vegan. Unapologetically radiant.
+            </p>
+            <div className="flex flex-wrap gap-6">
+              <button 
+                onClick={() => onNavigate('products')}
+                className="bg-white text-indigo-950 px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-indigo-950 hover:text-white transition-all shadow-2xl"
+              >
+                Explore Collection
+              </button>
+              <button 
+                onClick={() => onNavigate('story')}
+                className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-white/20 transition-all"
+              >
+                Our Story
+              </button>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Floating Features */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full max-w-5xl px-4 hidden md:flex justify-between gap-12 text-white/80">
+          <div className="flex items-center gap-4">
+            <Leaf size={20} className="text-purple-300" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">100% Vegan Formulas</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Droplets size={20} className="text-purple-300" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Hyaluronic Hydration</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <ShieldCheck size={20} className="text-purple-300" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Cruelty-Free Certified</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Best Sellers */}
+      <section className="py-32 px-4 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+          <div>
+            <span className="text-[11px] font-black uppercase tracking-[0.4em] mb-4 block" style={{ color: BRAND_PURPLE }}>Curated Essentials</span>
+            <h2 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white">Best Sellers</h2>
+          </div>
+          <button 
+            onClick={() => onNavigate('products')}
+            className="text-xs font-bold uppercase tracking-[0.2em] border-b-2 pb-2 hover:opacity-70 transition-opacity"
+            style={{ borderBottomColor: BRAND_PURPLE }}
+          >
+            View All Shades
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16">
+          {bestSellers.map(product => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              addToCart={addToCart} 
+              isAdding={addingId === product.id} 
+              onViewDetails={(p) => onNavigate(`product-${p.id}`)}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Brand Ethos */}
+      <section className="bg-slate-50 dark:bg-slate-900 py-32 rounded-[4rem] mx-4 mb-32 overflow-hidden relative">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <div className="relative">
+             <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800" className="rounded-[3rem] shadow-2xl relative z-10" alt="Ethos" />
+             <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full blur-3xl opacity-30 z-0" style={{ backgroundColor: BRAND_PURPLE }} />
+          </div>
+          <div>
+            <Quote size={48} className="text-purple-300 mb-8" />
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-8 leading-tight">
+              "We believe that <span className="italic">conscious beauty</span> should be an effortless luxury."
+            </h2>
+            <p className="text-lg text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">
+              Every MayGloss product is engineered with the highest quality botanical extracts. 
+              We replace harsh synthetic thickeners with nourishing seed oils, creating a shine 
+              that heals while it highlights.
+            </p>
+            <div className="grid grid-cols-2 gap-12">
+              <div>
+                <Sparkles className="mb-4" style={{ color: BRAND_PURPLE }} />
+                <h4 className="font-bold text-indigo-950 dark:text-white mb-2">Mirror Shine</h4>
+                <p className="text-sm text-slate-400">High-refractive index oils for a glass-like finish.</p>
+              </div>
+              <div>
+                <Droplets className="mb-4" style={{ color: BRAND_PURPLE }} />
+                <h4 className="font-bold text-indigo-950 dark:text-white mb-2">Serum Base</h4>
+                <p className="text-sm text-slate-400">Lip-treatment formula that stays silky, never sticky.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="py-32 bg-white dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-4">Muse Testimonials</h2>
+            <div className="flex justify-center gap-1">
+              {[...Array(5)].map((_, i) => <Star key={i} size={20} className="fill-purple-400 text-purple-400" />)}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {REVIEWS.map(review => (
+              <div key={review.id} className="bg-slate-50 dark:bg-slate-900 p-10 rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-4 mb-8">
+                  <img src={review.avatar} className="w-12 h-12 rounded-full object-cover" alt={review.name} />
+                  <div>
+                    <h4 className="font-bold text-indigo-950 dark:text-white">{review.name}</h4>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{review.date}</span>
+                  </div>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed italic mb-6">"{review.text}"</p>
+                <StarRating rating={review.rating} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
 // --- Root Component ---
 
 const App = () => {
@@ -515,7 +778,6 @@ const App = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const [addingToCartId, setAddingToCartId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  // Fix: Add missing searchQuery state used by Navbar.
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -533,6 +795,15 @@ const App = () => {
     }
   }, [darkMode]);
 
+  useEffect(() => {
+    const saved = localStorage.getItem('maygloss_cart');
+    if (saved) setCart(JSON.parse(saved));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('maygloss_cart', JSON.stringify(cart));
+  }, [cart]);
+
   const addNotification = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substr(2, 9);
     setNotifications(prev => [...prev, { id, message, type }]);
@@ -548,17 +819,23 @@ const App = () => {
     }, 400);
   };
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, quantity: number = 1) => {
     setAddingToCartId(product.id);
     setTimeout(() => {
         setCart(prev => {
             const existing = prev.find(i => i.id === product.id);
-            if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-            return [...prev, { ...product, quantity: 1 }];
+            if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i);
+            return [...prev, { ...product, quantity }];
         });
         setAddingToCartId(null);
-        addNotification(`${product.name} added to bag!`, 'success');
+        addNotification(`${quantity}x ${product.name} added to bag!`, 'success');
     }, 600);
+  };
+
+  const removeFromCart = (id: string) => {
+    const item = cart.find(i => i.id === id);
+    setCart(prev => prev.filter(i => i.id !== id));
+    if(item) addNotification(`Removed ${item.name} from bag.`, 'info');
   };
 
   const renderContent = () => {
@@ -568,14 +845,27 @@ const App = () => {
         </div>
     );
 
+    // Product Detail Routing
+    if (currentPath.startsWith('product-')) {
+      const prodId = currentPath.split('-')[1];
+      const product = PRODUCTS.find(p => p.id === prodId);
+      if (product) {
+        return <ProductDetailPage 
+          product={product} 
+          addToCart={addToCart} 
+          addingId={addingToCartId} 
+          onNavigate={navigateTo} 
+        />;
+      }
+    }
+
     switch (currentPath) {
-      case 'home': return <HomePage onNavigate={navigateTo} addToCart={addToCart} addingId={addingToCartId} />;
+      case 'home': return <HomePage onNavigate={navigateTo} addToCart={(p) => addToCart(p, 1)} addingId={addingToCartId} />;
       case 'products': return (
         <div className="pt-32 pb-32 px-4 max-w-7xl mx-auto">
             <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-16 text-center">The Full Palette</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16">
-                {/* Fix: Use addingToCartId instead of undefined addingId. */}
-                {PRODUCTS.map(p => <ProductCard key={p.id} product={p} addToCart={addToCart} isAdding={addingToCartId === p.id} />)}
+                {PRODUCTS.map(p => <ProductCard key={p.id} product={p} addToCart={(prod) => addToCart(prod, 1)} isAdding={addingToCartId === p.id} onViewDetails={(prod) => navigateTo(`product-${prod.id}`)} />)}
             </div>
         </div>
       );
@@ -635,16 +925,16 @@ const App = () => {
                                 <p className="text-slate-400">${item.price.toFixed(2)}</p>
                             </div>
                             <div className="flex items-center gap-4">
-                                <button onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))} className="text-red-400 hover:text-red-600"><Trash2 size={20} /></button>
+                                <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-600"><Trash2 size={20} /></button>
                             </div>
                         </div>
                     ))}
-                    <button onClick={() => navigateTo('home')} className="w-full bg-indigo-950 text-white py-6 rounded-full font-bold uppercase tracking-widest text-xs">Proceed to Bag Summary</button>
+                    <button onClick={() => navigateTo('home')} className="w-full bg-indigo-950 text-white py-6 rounded-full font-bold uppercase tracking-widest text-xs">Checkout securely</button>
                 </div>
             )}
         </div>
       );
-      default: return <HomePage onNavigate={navigateTo} addToCart={addToCart} addingId={addingToCartId} />;
+      default: return <HomePage onNavigate={navigateTo} addToCart={(p) => addToCart(p, 1)} addingId={addingToCartId} />;
     }
   };
 
