@@ -146,7 +146,7 @@ const PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&get=80&w=800',
+      'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&q=80&w=800',
       'https://images.unsplash.com/photo-1557053910-d9eaba703fa8?auto=format&fit=crop&q=80&w=800'
     ]
   },
@@ -290,6 +290,11 @@ const ChatInterface = ({ messages, setMessages, loading, setLoading, input, setI
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
+    
+    if (!process.env.API_KEY) {
+      console.error("Gemini API Key is missing. Please add API_KEY to your environment variables.");
+    }
+
     const userMsg: ChatMessage = { role: 'user', parts: text };
     setMessages((prev: any) => [...prev, userMsg]);
     setInput("");
@@ -305,8 +310,9 @@ const ChatInterface = ({ messages, setMessages, loading, setLoading, input, setI
         }
       });
       setMessages((prev: any) => [...prev, { role: 'model', parts: response.text || "I'm sorry, I couldn't process that. Try again?" }]);
-    } catch (e) {
-      setMessages((prev: any) => [...prev, { role: 'model', parts: "I'm having a little trouble connecting to my beauty lab. Please try again in a moment." }]);
+    } catch (e: any) {
+      console.error("AI Chat Error:", e);
+      setMessages((prev: any) => [...prev, { role: 'model', parts: "I'm having a little trouble connecting to my beauty lab. This is usually due to a missing or invalid API key. Please check your project settings." }]);
     } finally {
       setLoading(false);
     }
