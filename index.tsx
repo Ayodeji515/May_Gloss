@@ -41,7 +41,10 @@ import {
   Mic,
   MicOff,
   Send,
-  Sparkle
+  Sparkle,
+  Globe,
+  Award,
+  FlaskConical
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI } from "@google/genai";
@@ -273,6 +276,36 @@ const ScrollToTop = () => {
   );
 };
 
+// --- ProductCard: Enhanced for full-card clickability ---
+
+const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: any) => (
+  <motion.div 
+    whileHover={{ y: -10 }}
+    onClick={() => onViewDetails(product)} 
+    className="group cursor-pointer bg-white dark:bg-slate-900 rounded-[3rem] p-4 transition-all hover:shadow-2xl border border-transparent hover:border-slate-100 dark:hover:border-slate-800"
+  >
+    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 dark:bg-slate-800 aspect-[4/5] mb-6 shadow-inner">
+      <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+      <div className="absolute inset-0 bg-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      <button 
+        onClick={(e) => { e.stopPropagation(); if(!isAdding) addToCart(product, 1); }} 
+        className="absolute bottom-6 left-6 right-6 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest translate-y-20 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-xl flex items-center justify-center gap-3 z-20" 
+        style={{ color: BRAND_PURPLE }}
+      >
+        {isAdding ? <Loader2 className="animate-spin" size={16} /> : <ShoppingBag size={16} />}
+        {isAdding ? "Adding..." : `Quick Add — $${product.price.toFixed(2)}`}
+      </button>
+    </div>
+    <div className="px-4 pb-4 text-center">
+      <h3 className="text-xl font-bold text-indigo-950 dark:text-white mb-2 group-hover:text-purple-400 transition-colors">{product.name}</h3>
+      <div className="flex justify-between items-center max-w-[200px] mx-auto opacity-70">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{product.category}</span>
+        <span className="text-sm font-bold" style={{ color: BRAND_PURPLE }}>${product.price.toFixed(2)}</span>
+      </div>
+    </div>
+  </motion.div>
+);
+
 // --- AI Consultant Component ---
 
 const AIConsultant = () => {
@@ -333,18 +366,18 @@ const AIConsultant = () => {
   return (
     <div className="pt-40 pb-32 px-6 max-w-4xl mx-auto flex flex-col h-[80vh]">
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-purple-100 rounded-2xl text-purple-600"><Sparkle size={32} /></div>
+        <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-2xl text-purple-600"><Sparkle size={32} /></div>
         <div>
           <h1 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white">AI Beauty Guide</h1>
           <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Personalized Recommendations</p>
         </div>
       </div>
 
-      <div className="flex-grow bg-white dark:bg-slate-900 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-800 p-8 overflow-y-auto mb-6">
+      <div className="flex-grow bg-white dark:bg-slate-900 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-800 p-8 overflow-y-auto mb-6 scroll-smooth">
         <div className="flex flex-col gap-6">
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] px-6 py-4 rounded-3xl ${m.role === 'user' ? 'bg-indigo-950 text-white' : 'bg-slate-100 dark:bg-slate-800 text-indigo-950 dark:text-slate-200'}`}>
+              <div className={`max-w-[80%] px-6 py-4 rounded-3xl ${m.role === 'user' ? 'bg-indigo-950 text-white' : 'bg-slate-100 dark:bg-slate-800 text-indigo-950 dark:text-slate-200 shadow-sm'}`}>
                 <p className="text-sm leading-relaxed">{m.parts}</p>
               </div>
             </div>
@@ -354,18 +387,18 @@ const AIConsultant = () => {
         </div>
       </div>
 
-      <div className="flex gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-full border border-slate-100 dark:border-slate-800 shadow-lg">
+      <div className="flex gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-full border border-slate-100 dark:border-slate-800 shadow-lg group focus-within:ring-2 ring-purple-200">
         <input 
           value={input} 
           onChange={(e) => setInput(e.target.value)} 
           onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
           placeholder="Ask about shades, ingredients, or rituals..." 
-          className="flex-grow bg-transparent px-4 py-2 outline-none text-sm"
+          className="flex-grow bg-transparent px-4 py-2 outline-none text-sm placeholder:text-slate-300"
         />
-        <button onClick={startVoice} className={`p-3 rounded-full transition-all ${isRecording ? 'bg-red-500 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'}`}>
+        <button onClick={startVoice} className={`p-3 rounded-full transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'}`}>
           {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
         </button>
-        <button onClick={() => sendMessage(input)} className="p-3 bg-indigo-950 text-white rounded-full hover:scale-110 transition-transform">
+        <button onClick={() => sendMessage(input)} className="p-3 bg-indigo-950 text-white rounded-full hover:scale-110 transition-transform shadow-lg">
           <Send size={20} />
         </button>
       </div>
@@ -393,7 +426,7 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <div onClick={() => handleNav('home')} className="flex items-center gap-2 cursor-pointer group">
-             <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-serif font-bold text-xl" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
+             <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-serif font-bold text-xl transition-transform group-hover:scale-110" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
              <h1 className="text-xl md:text-2xl font-serif font-bold text-indigo-950 dark:text-purple-300">MayGloss</h1>
           </div>
         </div>
@@ -402,14 +435,19 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
           <button onClick={() => handleNav('home')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'home' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'home' ? BRAND_PURPLE : 'transparent' }}>Home</button>
           <div className="relative group" onMouseEnter={() => setIsDropdownOpen(true)} onMouseLeave={() => setIsDropdownOpen(false)}>
             <button className={`flex items-center gap-1 hover:text-indigo-950 transition-colors ${currentPath === 'products' ? 'text-indigo-950' : ''}`}>
-              Shop <ChevronDown size={14} />
+              Shop <ChevronDown size={14} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
             <AnimatePresence>
               {isDropdownOpen && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-100 dark:border-slate-800 p-4 overflow-hidden">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: 10 }} 
+                  className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-100 dark:border-slate-800 p-4 overflow-hidden z-[130]"
+                >
                   <div className="flex flex-col gap-4">
                     {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
-                      <button key={c} onClick={() => handleNav('products')} className="text-left hover:text-indigo-950 dark:hover:text-purple-300 transition-colors text-[10px] uppercase font-bold tracking-widest">{c} Collection</button>
+                      <button key={c} onClick={() => handleNav('products')} className="text-left hover:text-indigo-950 dark:hover:text-purple-300 transition-colors text-[10px] uppercase font-bold tracking-widest p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">{c} Collection</button>
                     ))}
                   </div>
                 </motion.div>
@@ -417,19 +455,19 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
             </AnimatePresence>
           </div>
           <button onClick={() => handleNav('lookbook')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'lookbook' ? 'text-indigo-950' : ''}`}>Muse</button>
-          <button onClick={() => handleNav('consultant')} className={`flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 text-purple-600 transition-all hover:scale-105 ${currentPath === 'consultant' ? 'ring-2 ring-purple-300' : ''}`}><Sparkle size={14} /> AI Guide</button>
+          <button onClick={() => handleNav('consultant')} className={`flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 transition-all hover:scale-105 ${currentPath === 'consultant' ? 'ring-2 ring-purple-300' : ''}`}><Sparkle size={14} /> AI Guide</button>
           <button onClick={() => handleNav('story')} className="hover:text-indigo-950 transition-colors">Story</button>
           <button onClick={() => handleNav('faq')} className="hover:text-indigo-950 transition-colors">FAQ</button>
         </div>
 
         <div className="flex items-center gap-4">
-          <button onClick={toggleDarkMode} className="p-2 text-slate-500 hover:text-indigo-950">
+          <button onClick={toggleDarkMode} className="p-2 text-slate-500 hover:text-indigo-950 transition-colors">
             {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <button onClick={() => handleNav('cart')} className="relative p-2.5 bg-slate-100 dark:bg-slate-900 rounded-full hover:bg-indigo-950 hover:text-white transition-all">
+          <button onClick={() => handleNav('cart')} className="relative p-2.5 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-indigo-950 hover:text-white transition-all shadow-sm">
             <ShoppingBag size={20} />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center" style={{ backgroundColor: BRAND_PURPLE }}>{cartCount}</span>
+              <span className="absolute -top-1 -right-1 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-lg" style={{ backgroundColor: BRAND_PURPLE }}>{cartCount}</span>
             )}
           </button>
         </div>
@@ -437,9 +475,15 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
 
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed inset-0 z-[115] bg-stone-50 dark:bg-slate-950 pt-24 px-6 lg:hidden flex flex-col gap-8">
+          <motion.div 
+            initial={{ x: '-100%' }} 
+            animate={{ x: 0 }} 
+            exit={{ x: '-100%' }} 
+            transition={{ type: 'spring', damping: 25 }} 
+            className="fixed inset-0 z-[115] bg-stone-50 dark:bg-slate-950 pt-24 px-6 lg:hidden flex flex-col gap-8 overflow-y-auto"
+          >
             {['home', 'products', 'lookbook', 'consultant', 'story', 'faq', 'cart'].map(p => (
-              <button key={p} onClick={() => handleNav(p)} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left">{p === 'consultant' ? 'AI Guide' : p}</button>
+              <button key={p} onClick={() => handleNav(p)} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">{p === 'consultant' ? 'AI Guide' : p}</button>
             ))}
           </motion.div>
         )}
@@ -455,25 +499,53 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
     <div className="bg-stone-50 dark:bg-slate-950">
       <section className="py-48 md:py-64 px-6 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-          <span className="inline-block px-4 py-1.5 rounded-full bg-purple-50 dark:bg-purple-900/30 font-bold tracking-[0.4em] uppercase text-[10px] mb-8 border border-purple-100" style={{ color: BRAND_PURPLE }}>Botanical Radiance Alchemy</span>
+          <span className="inline-block px-4 py-1.5 rounded-full bg-purple-50 dark:bg-purple-900/30 font-bold tracking-[0.4em] uppercase text-[10px] mb-8 border border-purple-100 shadow-sm" style={{ color: BRAND_PURPLE }}>Botanical Radiance Alchemy</span>
           <h1 className="text-6xl md:text-9xl font-serif font-bold text-indigo-950 dark:text-white mb-10 leading-[0.85]">Pure <br/><span className="italic font-normal">Luminance.</span></h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed">Experience high-shine, non-sticky lipcare infused with cold-pressed botanical oils. Designed for lasting hydration and a mirror-like glow.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => onNavigate('products')} className="w-full sm:w-auto text-white px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase hover:opacity-90 transition-all shadow-2xl" style={{ backgroundColor: BRAND_PURPLE }}>Shop Collection</button>
-            <button onClick={() => onNavigate('consultant')} className="w-full sm:w-auto bg-indigo-950 text-white px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2"><Sparkle size={16} /> Consult AI</button>
+            <button onClick={() => onNavigate('products')} className="w-full sm:w-auto text-white px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase hover:opacity-90 transition-all shadow-2xl hover:scale-105 active:scale-95" style={{ backgroundColor: BRAND_PURPLE }}>Shop Collection</button>
+            <button onClick={() => onNavigate('consultant')} className="w-full sm:w-auto bg-indigo-950 text-white px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"><Sparkle size={16} /> Consult AI</button>
           </div>
         </motion.div>
       </section>
 
       <section className="py-32 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-20">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 mb-4 block">Seasonal Edit</span>
           <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-4">Our Signature Selection</h2>
           <p className="text-slate-500 max-w-md mx-auto">Discover the shades that captured the hearts of our community.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {PRODUCTS.slice(0, 3).map(p => (
             <ProductCard key={p.id} product={p} addToCart={addToCart} isAdding={addingId === p.id} onViewDetails={(prod: any) => onNavigate(`product-${prod.id}`)} />
           ))}
+        </div>
+      </section>
+
+      {/* Brand Values Grid */}
+      <section className="py-32 bg-indigo-950 text-white rounded-[4rem] mx-4 mb-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-20 text-center">
+          <div className="group">
+             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-purple-400 transition-colors">
+                <Leaf size={32} />
+             </div>
+             <h3 className="text-2xl font-serif font-bold mb-4">100% Botanical</h3>
+             <p className="text-slate-400 text-sm leading-relaxed">No synthetic fillers. We use cold-pressed berry, grape, and almond oils to nourish your delicate lip skin naturally.</p>
+          </div>
+          <div className="group">
+             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-purple-400 transition-colors">
+                <Globe size={32} />
+             </div>
+             <h3 className="text-2xl font-serif font-bold mb-4">Planet Focused</h3>
+             <p className="text-slate-400 text-sm leading-relaxed">From FSC-certified paper to high-recycled glass bottles, our packaging is as conscious as our formulas.</p>
+          </div>
+          <div className="group">
+             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-purple-400 transition-colors">
+                <Award size={32} />
+             </div>
+             <h3 className="text-2xl font-serif font-bold mb-4">Ethically Certified</h3>
+             <p className="text-slate-400 text-sm leading-relaxed">Proudly cruelty-free and vegan since inception. We never test on animals, nor do we source from suppliers who do.</p>
+          </div>
         </div>
       </section>
 
@@ -484,11 +556,11 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {REVIEWS.map(r => (
-              <div key={r.id} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-50 dark:border-slate-800">
+              <div key={r.id} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-50 dark:border-slate-800 transition-transform hover:-translate-y-2">
                 <StarRating rating={r.rating} />
                 <p className="my-6 italic text-slate-600 dark:text-slate-400 leading-relaxed font-serif">"{r.text}"</p>
                 <div className="flex items-center gap-3">
-                  <img src={r.avatar} className="w-10 h-10 rounded-full object-cover" alt={r.name} />
+                  <img src={r.avatar} className="w-10 h-10 rounded-full object-cover shadow-md" alt={r.name} />
                   <span className="font-bold text-xs">{r.name}</span>
                 </div>
               </div>
@@ -500,44 +572,32 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
   );
 };
 
-const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: any) => (
-  <div onClick={() => onViewDetails(product)} className="group cursor-pointer">
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 dark:bg-slate-900 aspect-[4/5] mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-700">
-      <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
-      <div className="absolute inset-0 bg-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-      <button onClick={(e) => { e.stopPropagation(); if(!isAdding) addToCart(product, 1); }} className="absolute bottom-6 left-6 right-6 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest translate-y-20 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-xl flex items-center justify-center gap-3" style={{ color: BRAND_PURPLE }}>
-        {isAdding ? <Loader2 className="animate-spin" size={16} /> : <ShoppingBag size={16} />}
-        {isAdding ? "Adding..." : `Quick Add — $${product.price.toFixed(2)}`}
-      </button>
-    </div>
-    <div className="px-2 text-center">
-      <h3 className="text-xl font-bold text-indigo-950 dark:text-white mb-2">{product.name}</h3>
-      <div className="flex justify-between items-center max-w-[200px] mx-auto">
-        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{product.category}</span>
-        <span className="text-lg font-bold" style={{ color: BRAND_PURPLE }}>${product.price.toFixed(2)}</span>
-      </div>
-    </div>
-  </div>
-);
-
 const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) => {
   const [activeImg, setActiveImg] = useState(product.images[0]);
   const [quantity, setQuantity] = useState(1);
 
   return (
     <div className="pt-32 pb-32 px-6 max-w-7xl mx-auto relative">
-      <button onClick={() => onNavigate('home')} className="absolute top-24 left-6 p-3 bg-white dark:bg-slate-900 rounded-full shadow-lg hover:scale-110 transition-transform z-10">
-        <X size={24} className="text-indigo-950 dark:text-white" />
+      <button 
+        onClick={() => onNavigate('products')} 
+        className="absolute top-24 left-6 p-4 bg-white dark:bg-slate-900 rounded-full shadow-2xl hover:scale-110 transition-transform z-10 group"
+      >
+        <X size={24} className="text-indigo-950 dark:text-white group-hover:rotate-90 transition-transform" />
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 mt-12">
         <div className="flex flex-col gap-6">
-          <div className="aspect-[4/5] rounded-[3rem] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-2xl">
-            <motion.img key={activeImg} initial={{ opacity: 0 }} animate={{ opacity: 1 }} src={activeImg} className="w-full h-full object-cover" />
+          <div className="aspect-[4/5] rounded-[3.5rem] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-2xl border border-white dark:border-slate-800">
+            <motion.img key={activeImg} initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} src={activeImg} className="w-full h-full object-cover" />
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-4">
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {product.images.map((img: string, i: number) => (
-              <button key={i} onClick={() => setActiveImg(img)} className={`w-24 h-32 flex-shrink-0 rounded-2xl overflow-hidden border-2 ${activeImg === img ? 'border-purple-400' : 'border-transparent opacity-60'}`} style={{ borderColor: activeImg === img ? BRAND_PURPLE : 'transparent' }}>
+              <button 
+                key={i} 
+                onClick={() => setActiveImg(img)} 
+                className={`w-24 h-32 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${activeImg === img ? 'border-purple-400 scale-95 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`} 
+                style={{ borderColor: activeImg === img ? BRAND_PURPLE : 'transparent' }}
+              >
                 <img src={img} className="w-full h-full object-cover" />
               </button>
             ))}
@@ -546,28 +606,45 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) =>
 
         <div className="flex flex-col justify-center">
           <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-4 block" style={{ color: BRAND_PURPLE }}>Botanical Alchemy / {product.category}</span>
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-indigo-950 dark:text-white mb-6 leading-tight">{product.name}</h1>
-          <p className="text-2xl font-bold mb-8" style={{ color: BRAND_PURPLE }}>${product.price.toFixed(2)}</p>
-          <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed mb-10 italic">"{product.description}"</p>
+          <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6 leading-tight">{product.name}</h1>
+          <div className="flex items-center gap-6 mb-8">
+            <p className="text-3xl font-bold" style={{ color: BRAND_PURPLE }}>${product.price.toFixed(2)}</p>
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+            <StarRating rating={5} />
+          </div>
+          <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed mb-10 italic font-serif">"{product.description}"</p>
           
           <div className="space-y-8 mb-12">
             <div className="flex items-center gap-8">
               <span className="text-xs font-bold uppercase tracking-widest text-indigo-950 dark:text-slate-200">Quantity</span>
-              <div className="flex items-center gap-6 bg-slate-100 dark:bg-slate-800 rounded-full px-6 py-3">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="hover:text-purple-400"><Minus size={16} /></button>
-                <span className="font-bold text-lg w-6 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="hover:text-purple-400"><Plus size={16} /></button>
+              <div className="flex items-center gap-6 bg-slate-100 dark:bg-slate-800 rounded-full px-8 py-4 shadow-inner">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="hover:text-purple-400 transition-colors"><Minus size={18} /></button>
+                <span className="font-bold text-xl w-8 text-center">{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="hover:text-purple-400 transition-colors"><Plus size={18} /></button>
               </div>
             </div>
-            <button onClick={() => addToCart(product, quantity)} className="w-full text-white py-6 rounded-[2rem] font-bold shadow-2xl transition-all text-xs tracking-[0.2em] uppercase flex items-center justify-center gap-4" style={{ backgroundColor: BRAND_PURPLE }}>
+            <button 
+              onClick={() => addToCart(product, quantity)} 
+              className="w-full text-white py-6 rounded-full font-bold shadow-2xl transition-all text-xs tracking-[0.2em] uppercase flex items-center justify-center gap-4 hover:brightness-110 active:scale-95 disabled:opacity-50" 
+              style={{ backgroundColor: BRAND_PURPLE }}
+              disabled={addingId === product.id}
+            >
               {addingId === product.id ? <Loader2 className="animate-spin" size={18} /> : <ShoppingBag size={18} />}
-              {addingId === product.id ? "Processing..." : "Add to Bag"}
+              {addingId === product.id ? "Adding to Bag..." : "Add to Shopping Bag"}
             </button>
           </div>
 
-          <div className="p-8 bg-stone-100 dark:bg-slate-900 rounded-3xl">
-            <h4 className="text-xs font-black uppercase tracking-widest mb-4">The Ritual</h4>
-            <p className="text-sm text-slate-500 leading-relaxed">{product.ritual}</p>
+          <div className="grid grid-cols-2 gap-4">
+             <div className="p-6 bg-stone-100 dark:bg-slate-900 rounded-[2.5rem] border border-stone-200 dark:border-slate-800">
+                <h4 className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2"><Zap size={14} style={{ color: BRAND_PURPLE }} /> The Ingredients</h4>
+                <ul className="text-[10px] text-slate-500 space-y-1">
+                   {product.ingredients.slice(0, 4).map(ing => <li key={ing}>{ing}</li>)}
+                </ul>
+             </div>
+             <div className="p-6 bg-stone-100 dark:bg-slate-900 rounded-[2.5rem] border border-stone-200 dark:border-slate-800">
+                <h4 className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2"><FlaskConical size={14} style={{ color: BRAND_PURPLE }} /> The Ritual</h4>
+                <p className="text-[10px] text-slate-500 leading-relaxed">{product.ritual.slice(0, 80)}...</p>
+             </div>
           </div>
         </div>
       </div>
@@ -579,51 +656,68 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) =>
 
 const LegalPage = ({ title, content }: any) => (
   <div className="pt-32 pb-32 px-6 max-w-4xl mx-auto">
-    <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-16">{title}</h1>
-    <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 leading-relaxed space-y-8 text-lg">
+    <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-16">{title}</motion.h1>
+    <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 leading-relaxed space-y-12 text-lg font-light">
       {content}
     </div>
   </div>
 );
 
 const StoryContent = () => (
-  <div className="space-y-12">
-    <p className="text-2xl font-serif italic text-indigo-900 dark:text-purple-200">"We don't just create gloss; we engineer radiance."</p>
-    <p>MayGloss was founded on a singular obsession: mirror-like shine without the compromise of comfort. Our journey began in a botanical conservatory, where we discovered that cold-pressed seed oils could replicate the cushiony feel of synthetic polymers without the toxicity.</p>
-    <img src="https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=1200" className="w-full rounded-[3rem] shadow-2xl" alt="Lab Alchemy" />
-    <div className="grid md:grid-cols-2 gap-12">
-      <div>
-        <h3 className="text-xl font-bold mb-4">Conscious Science</h3>
-        <p>Every batch is dermatologically tested and pH-balanced to your lips. We believe beauty should be as healthy as it is captivating.</p>
-      </div>
-      <div>
-        <h3 className="text-xl font-bold mb-4">The Luminous Bond</h3>
-        <p>Our proprietary Luminous Bond™ technology binds hyaluronic spheres to your natural lip texture for 8 hours of weightless hydration.</p>
-      </div>
+  <div className="space-y-16">
+    <p className="text-3xl md:text-4xl font-serif italic text-indigo-900 dark:text-purple-200 leading-snug">"We don't just create gloss; we engineer a new standard of radiance that honors your skin and the planet."</p>
+    
+    <div className="flex flex-col md:flex-row gap-12 items-center">
+       <div className="flex-1 space-y-6">
+          <h3 className="text-2xl font-bold text-indigo-950 dark:text-white">Our Humble Beginnings</h3>
+          <p>MayGloss was founded in 2024 by a group of botanical chemists who were tired of the sticky, synthetic standard. We believed that luxury should feel like a serum, not like glue. Our journey began in a small botanical conservatory in London, experimenting with hundreds of cold-pressed seed oils to find the perfect 'Luminous Bond'.</p>
+       </div>
+       <div className="flex-1">
+          <img src="https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800" className="w-full rounded-[3rem] shadow-2xl" alt="Lab Alchemy" />
+       </div>
     </div>
+
+    <div className="bg-slate-100 dark:bg-slate-900 p-12 rounded-[3.5rem] space-y-8">
+       <h3 className="text-3xl font-serif font-bold text-center">The Botanical Standard</h3>
+       <div className="grid md:grid-cols-2 gap-12">
+          <div className="space-y-4">
+            <h4 className="font-bold flex items-center gap-2"><Sparkles size={20} className="text-purple-400" /> Conscious Science</h4>
+            <p className="text-sm">Every batch is dermatologically tested, pH-balanced, and stabilized using natural antioxidants. We replace harsh synthetic preservatives with rosemary and Vitamin E extracts.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-bold flex items-center gap-2"><Droplets size={20} className="text-purple-400" /> Deep Hydration</h4>
+            <p className="text-sm">Our proprietary Hyaluron-Bond™ technology binds moisture-locking spheres to your natural lip texture, ensuring the shine lasts as long as the hydration.</p>
+          </div>
+       </div>
+    </div>
+
+    <p>Today, MayGloss is more than a beauty brand. It's a testament to the power of nature combined with rigorous aesthetic standards. We remain 100% vegan, cruelty-free, and fiercely committed to making the world a more radiant place—one swipe at a time.</p>
   </div>
 );
 
 const FAQContent = () => {
   const [open, setOpen] = useState(0);
   const faqs = [
-    { q: "What makes MayGloss different from drugstore brands?", a: "Most drugstore glosses use petroleum-based jellies. We use 100% botanical seed oils and micro-hyaluronic spheres for a luxury, serum-like feel." },
-    { q: "Are the plumping effects painful?", a: "Not at all. Our Icy Plumper uses cooling peppermint and botanical peptides to stimulate blood flow gently, avoiding the stinging associated with ginger or capsicum based products." },
-    { q: "Is the packaging eco-friendly?", a: "Yes. Our tubes are made from 30% PCR (post-consumer recycled) plastic and our secondary boxes are FSC-certified compostable paper." },
-    { q: "Can I use the glosses as toppers?", a: "Absolutely. Our 'Shine' and 'Tint' formulas are designed to layer beautifully over lipsticks or liners without disturbing the base pigment." }
+    { q: "What makes MayGloss different from drugstore brands?", a: "Most mass-market glosses use petroleum-based jellies and synthetic polymers. MayGloss uses high-refractive index botanical seed oils (like Raspberry and Grape seed) and micro-hyaluronic spheres. This creates a serum-like luxury feel that nourishes your lips over time rather than just sitting on top of them." },
+    { q: "Are the plumping effects painful?", a: "Not at all. Our Icy Plumper uses cooling peppermint extracts and advanced botanical peptides to stimulate blood flow gently. We have completely removed ginger, capsicum, and other irritants associated with the 'stinging' sensation of traditional plumpers." },
+    { q: "Is the packaging truly eco-friendly?", a: "Yes. Our tubes are made from 30% Post-Consumer Recycled (PCR) plastic, and our secondary outer packaging is FSC-certified compostable paper printed with soy-based inks. We are actively working toward 100% biodegradable components by 2026." },
+    { q: "How long does a single application last?", a: "Our 'Shine' and 'Tint' formulas typically provide 4-6 hours of consistent high-gloss shine. Even after the shine fades, the botanical oils continue to provide hydration for up to 8 hours." },
+    { q: "Are your products safe for sensitive skin?", a: "Absolutely. All MayGloss formulas are dermatologist-tested and hypoallergenic. However, because we use potent botanical extracts, we always suggest a small patch test behind the ear if you have a known history of plant allergies." }
   ];
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {faqs.map((f, i) => (
-        <div key={i} className="border-b border-slate-100 dark:border-slate-800 pb-6">
+        <div key={i} className="border-b border-slate-100 dark:border-slate-800 pb-8">
           <button onClick={() => setOpen(i)} className="w-full text-left flex justify-between items-center group">
-            <span className="font-bold text-xl group-hover:text-purple-400 transition-colors">{f.q}</span>
-            <ChevronDown className={`transition-transform duration-300 ${open === i ? 'rotate-180 text-purple-400' : ''}`} />
+            <span className="font-bold text-2xl group-hover:text-purple-400 transition-colors leading-tight">{f.q}</span>
+            <div className={`p-2 rounded-full bg-slate-100 dark:bg-slate-800 transition-transform duration-300 ${open === i ? 'rotate-180 bg-purple-100 dark:bg-purple-900/30' : ''}`}>
+               <ChevronDown className={open === i ? 'text-purple-600' : ''} />
+            </div>
           </button>
           <AnimatePresence>
             {open === i && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                <p className="mt-4 text-slate-500 leading-relaxed bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl">{f.a}</p>
+                <p className="mt-6 text-slate-500 leading-relaxed font-light text-xl bg-stone-50 dark:bg-slate-900/50 p-8 rounded-[2rem] border border-stone-100 dark:border-slate-800">{f.a}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -635,27 +729,27 @@ const FAQContent = () => {
 
 const OrderSuccess = ({ method, orderId }: any) => (
   <div className="pt-48 pb-32 px-6 max-w-2xl mx-auto text-center">
-    <div className="w-24 h-24 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-10 text-green-500">
+    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-24 h-24 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-10 text-green-500">
       <CheckCircle2 size={48} />
-    </div>
-    <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-6">Radiance is En Route!</h1>
-    <p className="text-slate-500 mb-12">Your order <span className="font-bold text-indigo-950 dark:text-white">#{orderId}</span> is being prepared with care.</p>
+    </motion.div>
+    <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6">Radiance is En Route!</h1>
+    <p className="text-slate-500 mb-12 text-xl font-light">Your order <span className="font-bold text-indigo-950 dark:text-white">#{orderId}</span> is being prepared with artisanal care.</p>
     
     {method === 'bank' && (
-      <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-[2rem] text-left mb-12 border border-slate-100 dark:border-slate-800">
-        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-indigo-950 dark:text-white"><Banknote size={20} /> Payment Concierge</h3>
-        <p className="text-sm text-slate-500 mb-6">Complete your order by transferring to our secure account:</p>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2"><span>Bank:</span> <span className="font-bold">{BANK_DETAILS.bankName}</span></div>
-          <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2"><span>Account:</span> <span className="font-bold">{BANK_DETAILS.accountName}</span></div>
-          <div className="flex justify-between pb-2"><span>Number:</span> <span className="font-bold text-lg tracking-widest">{BANK_DETAILS.accountNumber}</span></div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] text-left mb-12 border border-slate-100 dark:border-slate-800 shadow-2xl">
+        <h3 className="font-bold text-xl mb-6 flex items-center gap-2 text-indigo-950 dark:text-white"><Banknote size={24} style={{ color: BRAND_PURPLE }} /> Payment Concierge</h3>
+        <p className="text-sm text-slate-500 mb-8 font-light">To finalize your order, please transfer the total amount to our secure bank account. Your order will be activated immediately upon confirmation.</p>
+        <div className="space-y-4 text-sm">
+          <div className="flex justify-between border-b border-slate-50 dark:border-slate-800 pb-3"><span>Bank Institution:</span> <span className="font-bold">{BANK_DETAILS.bankName}</span></div>
+          <div className="flex justify-between border-b border-slate-50 dark:border-slate-800 pb-3"><span>Account Holder:</span> <span className="font-bold">{BANK_DETAILS.accountName}</span></div>
+          <div className="flex justify-between pb-3"><span>Account Number:</span> <span className="font-bold text-2xl tracking-[0.2em]" style={{ color: BRAND_PURPLE }}>{BANK_DETAILS.accountNumber}</span></div>
         </div>
-      </div>
+      </motion.div>
     )}
 
-    <div className="flex flex-col gap-4">
-      <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Hi MayGloss! My Order ID is #${orderId}. I've just made a ${method === 'bank' ? 'bank transfer' : 'direct order'}.`)} className="bg-green-500 text-white px-12 py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl hover:bg-green-600 transition-all">
-        <MessageCircle size={20} /> Confirm on WhatsApp
+    <div className="flex flex-col gap-6">
+      <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Hi MayGloss! My Order ID is #${orderId}. I've just made a ${method === 'bank' ? 'bank transfer' : 'direct order'}. Please confirm my radiance.`)} className="bg-green-500 text-white px-12 py-6 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-2xl hover:bg-green-600 transition-all hover:scale-105 active:scale-95">
+        <MessageCircle size={24} /> Confirm via WhatsApp
       </button>
       <button onClick={() => window.location.reload()} className="text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:text-indigo-950 transition-colors">Return to Home</button>
     </div>
@@ -697,7 +791,7 @@ const App = () => {
     setTimeout(() => {
       setCurrentPath(path);
       setIsNavigating(false);
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 400);
   };
 
@@ -733,7 +827,10 @@ const App = () => {
       case 'home': return <HomePage onNavigate={navigateTo} addToCart={addToCart} addingId={addingToCartId} />;
       case 'products': return (
         <div className="pt-40 pb-32 px-6 max-w-7xl mx-auto">
-          <h1 className="text-5xl font-serif font-bold text-center mb-16">The Full Palette</h1>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-20">
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6">The Palette</h1>
+            <p className="text-slate-500 font-light text-xl">Discover our complete collection of botanical high-shines.</p>
+          </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {PRODUCTS.map(p => <ProductCard key={p.id} product={p} addToCart={addToCart} isAdding={addingToCartId === p.id} onViewDetails={(prod: any) => navigateTo(`product-${prod.id}`)} />)}
           </div>
@@ -741,56 +838,67 @@ const App = () => {
       );
       case 'lookbook': return (
         <div className="pt-40 pb-32 px-6 max-w-7xl mx-auto">
-          <h1 className="text-5xl font-serif font-bold text-center mb-16">The Muse Gallery</h1>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-20">
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6">The Muse Gallery</h1>
+            <p className="text-slate-500 font-light text-xl">Inspiration from our radiant community across the globe.</p>
+          </motion.div>
           <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
              {PRODUCTS.concat(PRODUCTS).map((p, i) => (
-               <div key={i} className="group relative overflow-hidden rounded-[2.5rem] cursor-pointer" onClick={() => navigateTo(`product-${p.id}`)}>
-                 <img src={p.image} className="w-full group-hover:scale-110 transition-transform duration-700" alt="Muse" />
-                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 text-center">
-                    <span className="text-white font-black tracking-widest text-[10px] uppercase mb-2">Signature Look</span>
-                    <h3 className="text-white font-serif text-2xl mb-4">{p.name}</h3>
-                    <button className="bg-white text-indigo-950 px-6 py-2 rounded-full font-bold text-[10px] uppercase">Shop Look</button>
+               <motion.div 
+                 key={i} 
+                 initial={{ opacity: 0, scale: 0.95 }}
+                 whileInView={{ opacity: 1, scale: 1 }}
+                 viewport={{ once: true }}
+                 className="group relative overflow-hidden rounded-[3rem] cursor-pointer shadow-lg hover:shadow-2xl transition-all" 
+                 onClick={() => navigateTo(`product-${p.id}`)}
+               >
+                 <img src={p.image} className="w-full group-hover:scale-110 transition-transform duration-1000" alt="Muse" />
+                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-8 text-center backdrop-blur-[2px]">
+                    <span className="text-white font-black tracking-widest text-[10px] uppercase mb-3 px-3 py-1 bg-white/20 rounded-full">Signature Edit</span>
+                    <h3 className="text-white font-serif text-3xl mb-6">{p.name}</h3>
+                    <button className="bg-white text-indigo-950 px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest hover:scale-110 active:scale-95 transition-transform">Shop Shade</button>
                  </div>
-               </div>
+               </motion.div>
              ))}
           </div>
         </div>
       );
       case 'consultant': return <AIConsultant />;
-      case 'story': return <LegalPage title="Our Radiant Story" content={<StoryContent />} />;
+      case 'story': return <LegalPage title="Botanical Passion" content={<StoryContent />} />;
       case 'faq': return <LegalPage title="Beauty Enquiries" content={<FAQContent />} />;
       case 'cart': return (
         <div className="pt-40 pb-32 px-6 max-w-4xl mx-auto">
-          <h1 className="text-4xl font-serif font-bold mb-12">Shopping Bag</h1>
+          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-12">Shopping Bag</h1>
           {cart.length === 0 ? (
-            <div className="text-center py-24 bg-white dark:bg-slate-900 rounded-[3rem] shadow-sm">
-              <ShoppingBag className="mx-auto mb-6 text-slate-200" size={64} />
-              <p className="text-slate-400">Your bag is currently empty.</p>
-              <button onClick={() => navigateTo('products')} className="mt-8 font-bold text-xs uppercase tracking-widest border-b-2" style={{ color: BRAND_PURPLE, borderBottomColor: BRAND_PURPLE }}>Discover Shades</button>
+            <div className="text-center py-24 bg-white dark:bg-slate-900 rounded-[3.5rem] shadow-sm border border-slate-50 dark:border-slate-800">
+              <ShoppingBag className="mx-auto mb-8 text-slate-200" size={80} />
+              <p className="text-slate-400 text-xl font-light mb-10">Your bag is currently echoing silence...</p>
+              <button onClick={() => navigateTo('products')} className="px-10 py-4 bg-indigo-950 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform">Discover Shades</button>
             </div>
           ) : (
             <div className="space-y-8">
               {cart.map(item => (
-                <div key={item.id} className="flex gap-6 items-center bg-white dark:bg-slate-900 p-6 rounded-[2rem] shadow-sm border border-slate-50 dark:border-slate-800">
-                  <img src={item.image} className="w-20 h-20 rounded-2xl object-cover" alt={item.name} />
+                <div key={item.id} className="flex gap-8 items-center bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-sm border border-slate-50 dark:border-slate-800 transition-all hover:shadow-lg">
+                  <img src={item.image} className="w-24 h-24 rounded-[1.5rem] object-cover shadow-inner" alt={item.name} />
                   <div className="flex-grow">
-                    <h3 className="font-bold text-lg">{item.name}</h3>
-                    <p className="text-slate-400 text-sm">{item.quantity} x ${item.price.toFixed(2)}</p>
+                    <h3 className="font-bold text-2xl text-indigo-950 dark:text-white">{item.name}</h3>
+                    <p className="text-slate-400 text-sm mt-1 uppercase tracking-widest">{item.category} / {item.quantity} units</p>
+                    <p className="text-indigo-950 dark:text-purple-400 font-bold mt-2">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
-                  <button onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))} className="text-red-400 p-2 hover:bg-red-50 rounded-full transition-colors"><Trash2 size={20} /></button>
+                  <button onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))} className="text-red-400 p-4 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-full transition-colors"><Trash2 size={24} /></button>
                 </div>
               ))}
-              <div className="p-12 bg-indigo-950 text-white rounded-[3.5rem] shadow-2xl space-y-10">
-                <div className="flex justify-between items-center text-3xl font-serif">
-                  <span>Bag Total</span>
+              <div className="p-12 bg-indigo-950 text-white rounded-[4rem] shadow-2xl space-y-12">
+                <div className="flex justify-between items-center text-4xl font-serif">
+                  <span className="font-light">Total Radiance</span>
                   <span className="font-bold">${cart.reduce((s, i) => s + (i.price * i.quantity), 0).toFixed(2)}</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button onClick={() => placeOrder('bank')} className="bg-white text-indigo-950 py-5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all">
-                    <Banknote size={16} /> Pay via Bank Transfer
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <button onClick={() => placeOrder('bank')} className="bg-white text-indigo-950 py-6 rounded-full font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all">
+                    <Banknote size={20} /> Pay via Bank Transfer
                   </button>
-                  <button onClick={() => placeOrder('whatsapp')} className="bg-green-500 text-white py-5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all">
-                    <MessageCircle size={16} /> Order via WhatsApp
+                  <button onClick={() => placeOrder('whatsapp')} className="bg-green-500 text-white py-6 rounded-full font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all">
+                    <MessageCircle size={20} /> Order via WhatsApp
                   </button>
                 </div>
               </div>
@@ -798,19 +906,64 @@ const App = () => {
           )}
         </div>
       );
-      case 'shipping': return <LegalPage title="Shipping Concierge" content={<p>All MayGloss orders are handled with botanical care. We ship globally from our labs in London and California. Orders over $60 qualify for complimentary priority shipping. Standard domestic transit is 3-5 days. International orders typically arrive in 7-14 business days. Track your radiance through our secure portal.</p>} />;
-      case 'returns': return <LegalPage title="Glow Guarantee" content={<p>We stand by our alchemy. If you are not 100% radiant after using MayGloss, we offer simple 30-day returns on all products. Items must be in their original botanical packaging. For hygiene reasons, opened products must demonstrate a genuine fault for a full refund. Shades can be exchanged for free within 14 days of receipt.</p>} />;
-      case 'privacy': return <LegalPage title="Privacy Promise" content={<p>Your data is handled with the same integrity as our formulas. We never sell your personal information. We use bank-grade encryption for all secure payments and our servers are 100% carbon-neutral. We only store data necessary to refine your experience.</p>} />;
-      case 'terms': return <LegalPage title="Ritual Terms" content={<p>By using the MayGloss site, you agree to our terms of service. Our products are for cosmetic use only. We reserve the right to refuse orders that appear to be for resale without prior agreement. Prices are listed in USD and are subject to change without notice based on botanical ingredient fluctuations.</p>} />;
-      case 'policy': return <LegalPage title="Safety Policy" content={<p>MayGloss is 100% Vegan and Cruelty-Free. Our labs are regularly inspected for ethical compliance. While our formulas are hypoallergenic, we always recommend a patch test behind the ear before full application, as some botanical extracts (like peppermint or berry oils) can be potent.</p>} />;
-      case 'contact': return <LegalPage title="Let's Connect" content={<p>Need a personal shade match? Our concierge is available daily. Email: concierge@maygloss.com | WhatsApp: {WHATSAPP_NUMBER} | Instagram: @MayGlossBeauty. Typical response time is under 4 hours.</p>} />;
+      case 'shipping': return <LegalPage title="Shipping Concierge" content={
+        <div className="space-y-8">
+           <p>All MayGloss orders are handled with botanical care. We currently ship globally from our logistics centers in London, California, and Lagos. Our goal is to ensure your radiance arrives swiftly and securely.</p>
+           <h3 className="text-2xl font-bold">Delivery Times</h3>
+           <p>Domestic (standard): 3-5 business days. <br/>International (standard): 7-14 business days. <br/>Priority Express: 1-2 business days (domestic) or 3-5 days (global).</p>
+           <p>Orders exceeding $60 qualify for complimentary priority shipping. You will receive a secure tracking link as soon as our couriers have collected your parcel.</p>
+        </div>
+      } />;
+      case 'returns': return <LegalPage title="Returns & Refunds" content={
+        <div className="space-y-8">
+          <p>We believe in our alchemy. If for any reason you are not completely satisfied with your MayGloss purchase, we offer a generous 30-day return window from the date of receipt.</p>
+          <h3 className="text-2xl font-bold">The Process</h3>
+          <p>1. Contact concierge@maygloss.com with your order ID. <br/>2. Return the product in its original botanical outer packaging. <br/>3. Once inspected, we will issue a full refund to your original payment method within 5-7 business days.</p>
+          <p>Please note that for hygiene reasons, we cannot accept returns for heavily used items unless they demonstrate a manufacturing defect. Shade exchanges are always complimentary within 14 days.</p>
+        </div>
+      } />;
+      case 'privacy': return <LegalPage title="Privacy Concierge" content={
+        <div className="space-y-8">
+          <p>At MayGloss, your trust is our most valuable ingredient. We handle your personal data with the same integrity we apply to our formulas. We never sell, rent, or trade your personal information to third parties for marketing purposes.</p>
+          <p>We use bank-grade SSL encryption for all financial transactions and our servers are 100% carbon-neutral. We only store information necessary to provide you with an exceptional, personalized beauty experience. You have the right to request deletion of your data at any time through our privacy concierge.</p>
+        </div>
+      } />;
+      case 'terms': return <LegalPage title="Terms of Service" content={
+        <div className="space-y-8">
+          <p>By using the MayGloss platform, you enter into a ritual of service agreement. All products are intended for cosmetic, personal use only. Resale of MayGloss products without a certified partnership agreement is prohibited.</p>
+          <p>We reserve the right to cancel any order that demonstrates signs of fraudulent activity or non-compliance with our botanical fair-trade guidelines. Prices are displayed in USD and are subject to minor adjustments based on global botanical harvesting costs.</p>
+        </div>
+      } />;
+      case 'policy': return <LegalPage title="Safety & Purity" content={
+        <div className="space-y-8">
+          <p>MayGloss is 100% Vegan and Cruelty-Free. Our formulas are PETA certified and developed in labs that adhere to strict ethical and ecological standards. We have eliminated over 1,400 restricted substances from our manufacturing process, far exceeding global regulatory requirements.</p>
+          <p>While our formulas are hypoallergenic, botanical extracts are potent. We recommend a patch test behind the ear 24 hours prior to full use, especially for individuals with known nut or seed allergies (as we utilize almond and grape seed oils).</p>
+        </div>
+      } />;
+      case 'contact': return <LegalPage title="Direct Concierge" content={
+        <div className="space-y-8 text-center bg-white dark:bg-slate-900 p-16 rounded-[4rem] shadow-2xl">
+          <MessageCircle size={48} className="mx-auto mb-8 text-purple-400" />
+          <p className="text-2xl font-serif">Need a personal shade match or have a question about our alchemy?</p>
+          <div className="grid md:grid-cols-2 gap-12 mt-12 text-left">
+             <div className="space-y-4">
+                <h4 className="font-bold uppercase tracking-widest text-[10px]">Email Support</h4>
+                <p className="text-xl">concierge@maygloss.com</p>
+             </div>
+             <div className="space-y-4">
+                <h4 className="font-bold uppercase tracking-widest text-[10px]">Instant Message</h4>
+                <p className="text-xl">WhatsApp: {WHATSAPP_NUMBER}</p>
+             </div>
+          </div>
+          <p className="mt-16 text-slate-400 font-light italic">Our global concierge typically responds within 4 hours.</p>
+        </div>
+      } />;
       case 'success': return <OrderSuccess method={orderMethod} orderId={Math.floor(Math.random() * 90000) + 10000} />;
       default: return <HomePage onNavigate={navigateTo} addToCart={addToCart} addingId={addingToCartId} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-500">
+    <div className="min-h-screen bg-stone-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-500 selection:bg-purple-200">
       <Navbar cartCount={cart.reduce((s, i) => s + i.quantity, 0)} onNavigate={navigateTo} currentPath={currentPath} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       <main className="min-h-screen">
         <AnimatePresence mode="wait">
@@ -827,36 +980,36 @@ const App = () => {
                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-serif font-bold text-sm" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
                  <h2 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">MayGloss</h2>
             </div>
-            <p className="text-slate-500 text-sm leading-relaxed max-w-xs">Botanical hydration and mirror-like shine for every skin tone. Your natural beauty, amplified through science.</p>
-            <div className="flex gap-4">
-               <Instagram size={18} className="text-slate-400 hover:text-purple-400 cursor-pointer" />
-               <Twitter size={18} className="text-slate-400 hover:text-purple-400 cursor-pointer" />
+            <p className="text-slate-500 text-sm leading-relaxed max-w-xs">Botanical hydration and mirror-like shine for every skin tone. Your natural beauty, amplified through conscious science.</p>
+            <div className="flex gap-6">
+               <Instagram size={22} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
+               <Twitter size={22} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
             </div>
           </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Discover</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>The Collection</h3>
             <ul className="space-y-4 text-sm text-slate-500">
-              <li onClick={() => navigateTo('home')} className="hover:text-indigo-950 cursor-pointer transition-colors">Home</li>
-              <li onClick={() => navigateTo('products')} className="hover:text-indigo-950 cursor-pointer transition-colors">The Palette</li>
-              <li onClick={() => navigateTo('lookbook')} className="hover:text-indigo-950 cursor-pointer transition-colors">Muse Gallery</li>
-              <li onClick={() => navigateTo('consultant')} className="hover:text-indigo-950 cursor-pointer transition-colors">AI Guide</li>
+              <li onClick={() => navigateTo('home')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Home</li>
+              <li onClick={() => navigateTo('products')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">The Palette</li>
+              <li onClick={() => navigateTo('lookbook')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Muse Gallery</li>
+              <li onClick={() => navigateTo('consultant')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors flex items-center gap-2">AI Guide <Sparkle size={12} className="text-purple-400" /></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Concierge</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Support</h3>
             <ul className="space-y-4 text-sm text-slate-500">
-              <li onClick={() => navigateTo('faq')} className="hover:text-indigo-950 cursor-pointer transition-colors">Help FAQ</li>
-              <li onClick={() => navigateTo('shipping')} className="hover:text-indigo-950 cursor-pointer transition-colors">Shipping Care</li>
-              <li onClick={() => navigateTo('returns')} className="hover:text-indigo-950 cursor-pointer transition-colors">Returns & Refunds</li>
-              <li onClick={() => navigateTo('contact')} className="hover:text-indigo-950 cursor-pointer transition-colors">Direct Enquiry</li>
+              <li onClick={() => navigateTo('faq')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Help FAQ</li>
+              <li onClick={() => navigateTo('shipping')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Shipping Info</li>
+              <li onClick={() => navigateTo('returns')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Returns & Exchanges</li>
+              <li onClick={() => navigateTo('contact')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Contact Concierge</li>
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Legals</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Legals</h3>
             <ul className="space-y-4 text-sm text-slate-500">
-              <li onClick={() => navigateTo('privacy')} className="hover:text-indigo-950 cursor-pointer transition-colors">Privacy Promise</li>
-              <li onClick={() => navigateTo('terms')} className="hover:text-indigo-950 cursor-pointer transition-colors">Terms of Service</li>
-              <li onClick={() => navigateTo('policy')} className="hover:text-indigo-950 cursor-pointer transition-colors">Safety Policy</li>
+              <li onClick={() => navigateTo('privacy')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Privacy Promise</li>
+              <li onClick={() => navigateTo('terms')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Terms of Service</li>
+              <li onClick={() => navigateTo('policy')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Safety Policy</li>
             </ul>
           </div>
         </div>
