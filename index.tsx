@@ -458,7 +458,7 @@ const GlobalChatWidget = () => {
   );
 };
 
-// --- Main Components ---
+// --- Product Card: Enhanced for full-card clickability ---
 
 const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: any) => (
   <motion.div 
@@ -591,7 +591,7 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
         <div className="text-center mb-20">
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 mb-4 block">Seasonal Edit</span>
           <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-4">Our Signature Selection</h2>
-          <p className="text-slate-500 max-md max-w-md mx-auto">Discover the shades that captured the hearts of our community.</p>
+          <p className="text-slate-500 max-w-md mx-auto">Discover the shades that captured the hearts of our community.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {PRODUCTS.slice(0, 3).map(p => (
