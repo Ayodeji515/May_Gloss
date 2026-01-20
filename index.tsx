@@ -45,7 +45,10 @@ import {
   Globe, 
   Award, 
   FlaskConical,
-  Bot
+  Bot,
+  Share2,
+  Copy,
+  Facebook
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI } from "@google/genai";
@@ -156,7 +159,7 @@ const PRODUCTS: Product[] = [
     price: 20.00,
     category: 'Tint',
     description: 'A cushiony lip oil that drenches lips in moisture. Leaves a delicate berry stain that lasts.',
-    ingredients: ['Rubus Idaeus (Raspberry) Seed Oil', 'Jojoba Ester', 'Rosehip Oil', 'Fruit AHAs'],
+    ingredients: ['Rubus Idaeus (Raspberry) Seed Oil', 'Jojojoba Ester', 'Rosehip Oil', 'Fruit AHAs'],
     ritual: 'Use as a base for lipstick or wear alone for the ultimate hydrated lip glow.',
     image: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800',
     images: [
@@ -510,8 +513,12 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
     <nav className="fixed top-0 left-0 right-0 z-[120] bg-stone-50/95 dark:bg-slate-950/95 backdrop-blur-lg border-b border-purple-100 dark:border-slate-800 h-20">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 text-indigo-950 dark:text-white">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)} 
+            className="lg:hidden p-3 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-indigo-950 dark:text-white"
+            aria-label="Toggle Menu"
+          >
+            {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
           <div onClick={() => handleNav('home')} className="flex items-center gap-2 cursor-pointer group">
              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-serif font-bold text-xl transition-transform group-hover:scale-110" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
@@ -580,13 +587,19 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
-            initial={{ x: '-100%' }} 
-            animate={{ x: 0 }} 
-            exit={{ x: '-100%' }} 
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }} 
-            className="fixed inset-0 z-[115] bg-stone-50 dark:bg-slate-950 pt-24 px-8 lg:hidden flex flex-col gap-6 overflow-y-auto"
+            initial={{ opacity: 0, x: -100 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: -100 }} 
+            transition={{ type: 'spring', damping: 30, stiffness: 250 }} 
+            className="fixed inset-0 z-[115] bg-stone-50 dark:bg-slate-950 pt-28 pb-10 px-10 lg:hidden flex flex-col gap-6 overflow-y-auto"
           >
-            <button onClick={() => handleNav('home')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Home</button>
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleNav('home')} 
+              className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors"
+            >
+              Home
+            </motion.button>
             
             <div className="space-y-4">
               <button 
@@ -601,21 +614,27 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
                     initial={{ height: 0, opacity: 0 }} 
                     animate={{ height: 'auto', opacity: 1 }} 
                     exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden flex flex-col gap-4 pl-4 border-l-2 border-purple-100"
+                    className="overflow-hidden flex flex-col gap-5 pl-6 border-l-2 border-purple-200 dark:border-purple-800"
                   >
                     {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
-                      <button key={c} onClick={() => handleNav('products')} className="text-left text-xl font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-950 transition-colors">{c} Collection</button>
+                      <button key={c} onClick={() => handleNav('products')} className="text-left text-xl font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors">{c} Collection</button>
                     ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            <button onClick={() => handleNav('lookbook')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Muse</button>
-            <button onClick={() => handleNav('consultant')} className="text-4xl font-serif font-bold text-purple-400 capitalize text-left transition-colors flex items-center gap-4">AI Guide <Sparkle size={32} /></button>
-            <button onClick={() => handleNav('story')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Story</button>
-            <button onClick={() => handleNav('faq')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">FAQ</button>
-            <button onClick={() => handleNav('cart')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Cart</button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleNav('lookbook')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Muse</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleNav('consultant')} className="text-4xl font-serif font-bold text-purple-400 capitalize text-left transition-colors flex items-center gap-4">AI Guide <Sparkle size={32} /></motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleNav('story')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Story</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleNav('faq')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">FAQ</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleNav('cart')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Bag</motion.button>
+
+            <div className="mt-auto flex gap-8 pt-10 border-t border-slate-200 dark:border-slate-800">
+               <Instagram size={28} className="text-slate-400" />
+               <Twitter size={28} className="text-slate-400" />
+               <Facebook size={28} className="text-slate-400" />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -623,86 +642,33 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
   );
 };
 
-const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
-  return (
-    <div className="bg-stone-50 dark:bg-slate-950">
-      <section className="py-48 md:py-64 px-6 text-center">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-          <span className="inline-block px-4 py-1.5 rounded-full bg-purple-50 dark:bg-purple-900/30 font-bold tracking-[0.4em] uppercase text-[10px] mb-8 border border-purple-100 shadow-sm" style={{ color: BRAND_PURPLE }}>Botanical Radiance Alchemy</span>
-          <h1 className="text-6xl md:text-9xl font-serif font-bold text-indigo-950 dark:text-white mb-10 leading-[0.85]">Pure <br/><span className="italic font-normal">Luminance.</span></h1>
-          <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed">Experience high-shine, non-sticky lipcare infused with cold-pressed botanical oils. Designed for lasting hydration and a mirror-like glow.</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => onNavigate('products')} className="w-full sm:w-auto text-white px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase hover:opacity-90 transition-all shadow-2xl hover:scale-105 active:scale-95" style={{ backgroundColor: BRAND_PURPLE }}>Shop Collection</button>
-            <button onClick={() => onNavigate('consultant')} className="w-full sm:w-auto bg-indigo-950 text-white px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"><Sparkle size={16} /> Consult AI</button>
-          </div>
-        </motion.div>
-      </section>
-
-      <section className="py-32 px-4 max-w-7xl mx-auto">
-        <div className="text-center mb-20">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 mb-4 block">Seasonal Edit</span>
-          <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-4">Our Signature Selection</h2>
-          <p className="text-slate-500 max-w-md mx-auto">Discover the shades that captured the hearts of our community.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {PRODUCTS.slice(0, 3).map(p => (
-            <ProductCard key={p.id} product={p} addToCart={addToCart} isAdding={addingId === p.id} onViewDetails={(prod: any) => onNavigate(`product-${prod.id}`)} />
-          ))}
-        </div>
-      </section>
-
-      <section className="py-32 bg-indigo-950 text-white rounded-[4rem] mx-4 mb-32 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-20 text-center">
-          <div className="group">
-             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-purple-400 transition-colors">
-                <Leaf size={32} />
-             </div>
-             <h3 className="text-2xl font-serif font-bold mb-4">100% Botanical</h3>
-             <p className="text-slate-400 text-sm leading-relaxed">No synthetic fillers. We use cold-pressed berry, grape, and almond oils to nourish your delicate lip skin naturally.</p>
-          </div>
-          <div className="group">
-             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-purple-400 transition-colors">
-                <Globe size={32} />
-             </div>
-             <h3 className="text-2xl font-serif font-bold mb-4">Planet Focused</h3>
-             <p className="text-slate-400 text-sm leading-relaxed">From FSC-certified paper to high-recycled glass bottles, our packaging is as conscious as our formulas.</p>
-          </div>
-          <div className="group">
-             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-purple-400 transition-colors">
-                <Award size={32} />
-             </div>
-             <h3 className="text-2xl font-serif font-bold mb-4">Ethically Certified</h3>
-             <p className="text-slate-400 text-sm leading-relaxed">Proudly cruelty-free and vegan since inception. We never test on animals, nor do we source from suppliers who do.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-             <h2 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white">Community Praise</h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {REVIEWS.map(r => (
-              <div key={r.id} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-50 dark:border-slate-800 transition-transform hover:-translate-y-2">
-                <StarRating rating={r.rating} />
-                <p className="my-6 italic text-slate-600 dark:text-slate-400 leading-relaxed font-serif">"{r.text}"</p>
-                <div className="flex items-center gap-3">
-                  <img src={r.avatar} className="w-10 h-10 rounded-full object-cover shadow-md" alt={r.name} />
-                  <span className="font-bold text-xs">{r.name}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-};
-
-const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) => {
+const ProductDetailPage = ({ product, addToCart, addingId, onNavigate, onNotify }: any) => {
   const [activeImg, setActiveImg] = useState(product.images[0]);
   const [quantity, setQuantity] = useState(1);
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `MayGloss | ${product.name}`,
+      text: `Indulge in botanical radiance with ${product.name} from MayGloss. Pure hydration, mirror-like shine.`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('User cancelled or share failed');
+      }
+    } else {
+      // Fallback: Copy to Clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        onNotify("Link copied to clipboard!");
+      } catch (err) {
+        onNotify("Unable to copy link.");
+      }
+    }
+  };
 
   return (
     <div className="pt-32 pb-32 px-6 max-w-7xl mx-auto relative">
@@ -710,7 +676,7 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) =>
         onClick={() => onNavigate('products')} 
         className="absolute top-24 left-6 p-4 bg-white dark:bg-slate-900 rounded-full shadow-2xl hover:scale-110 transition-transform z-10 group"
       >
-        <X size={24} className="text-indigo-950 dark:text-white group-hover:rotate-90 transition-transform" />
+        <ArrowLeft size={24} className="text-indigo-950 dark:text-white group-hover:-translate-x-1 transition-transform" />
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 mt-12">
@@ -733,7 +699,19 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) =>
         </div>
 
         <div className="flex flex-col justify-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-4 block" style={{ color: BRAND_PURPLE }}>Botanical Alchemy / {product.category}</span>
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] block" style={{ color: BRAND_PURPLE }}>Botanical Alchemy / {product.category}</span>
+            <motion.button 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleShare}
+              className="p-3 bg-stone-100 dark:bg-slate-800 rounded-full text-indigo-950 dark:text-white shadow-sm hover:shadow-md transition-all flex items-center gap-2 group"
+            >
+              <Share2 size={18} className="group-hover:text-purple-400 transition-colors" />
+              <span className="text-[10px] uppercase font-bold tracking-widest pr-1">Share</span>
+            </motion.button>
+          </div>
+          
           <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6 leading-tight">{product.name}</h1>
           <div className="flex items-center gap-6 mb-8">
             <p className="text-3xl font-bold" style={{ color: BRAND_PURPLE }}>${product.price.toFixed(2)}</p>
@@ -884,6 +862,134 @@ const OrderSuccess = ({ method, orderId }: any) => (
   </div>
 );
 
+// --- HomePage Component ---
+const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
+  const bestSellers = PRODUCTS.filter(p => p.isBestSeller);
+
+  return (
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=2000" 
+            className="w-full h-full object-cover opacity-80 dark:opacity-60" 
+            alt="Hero Background" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-stone-50/50 to-stone-50 dark:via-slate-950/50 dark:to-slate-950" />
+        </div>
+
+        <div className="relative z-10 text-center px-6 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-indigo-950 dark:text-purple-400 mb-6 block">Botanical High-Shine Lab</span>
+            <h1 className="text-7xl md:text-9xl font-serif font-bold text-indigo-950 dark:text-white mb-8 leading-tight">Beyond <br/>The Gloss</h1>
+            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 font-light mb-12 leading-relaxed">Experience a serum-infused ritual that transforms your lips into mirror-like reflections of nature's purity.</p>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+              <button 
+                onClick={() => onNavigate('products')}
+                className="px-12 py-6 bg-indigo-950 text-white rounded-full font-bold text-xs uppercase tracking-widest shadow-2xl hover:scale-110 active:scale-95 transition-all"
+              >
+                Shop The Palette
+              </button>
+              <button 
+                onClick={() => onNavigate('story')}
+                className="px-12 py-6 bg-white dark:bg-slate-900 text-indigo-950 dark:text-white border border-slate-200 dark:border-slate-800 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+              >
+                Our Botanical Story
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Benefits Bar */}
+      <section className="py-12 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-around gap-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+          <div className="flex items-center gap-3"><Leaf size={16} style={{ color: BRAND_PURPLE }} /> 100% Vegan</div>
+          <div className="flex items-center gap-3"><Droplets size={16} style={{ color: BRAND_PURPLE }} /> Hyaluronic Acid</div>
+          <div className="flex items-center gap-3"><ShieldCheck size={16} style={{ color: BRAND_PURPLE }} /> Dermatologist Tested</div>
+          <div className="flex items-center gap-3"><Sparkles size={16} style={{ color: BRAND_PURPLE }} /> Mirror Finish</div>
+        </div>
+      </section>
+
+      {/* Best Sellers */}
+      <section className="py-32 px-6 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 mb-4 block">The Essentials</span>
+            <h2 className="text-5xl md:text-6xl font-serif font-bold text-indigo-950 dark:text-white">Most Loved Edits</h2>
+          </div>
+          <button 
+            onClick={() => onNavigate('products')}
+            className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-indigo-950 dark:text-white group"
+          >
+            View All Shades <ChevronRight size={16} className="group-hover:translate-x-2 transition-transform" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          {bestSellers.map(p => (
+            <ProductCard 
+              key={p.id} 
+              product={p} 
+              addToCart={addToCart} 
+              isAdding={addingId === p.id} 
+              onViewDetails={(prod: any) => onNavigate(`product-${prod.id}`)} 
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Lifestyle Feature */}
+      <section className="py-32 bg-stone-100 dark:bg-slate-900/50">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+          <div className="relative">
+            <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl rotate-3 scale-95 opacity-50 absolute inset-0 -z-10 bg-purple-200" />
+            <img 
+              src="https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&q=80&w=800" 
+              className="w-full h-full object-cover rounded-[3.5rem] shadow-2xl" 
+              alt="Lifestyle" 
+            />
+          </div>
+          <div className="space-y-10">
+            <h2 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white leading-tight">The <br/>Luminous <br/>Bond™</h2>
+            <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed">Our proprietary technology doesn't just sit on your lips. It bonds with your natural hydration, creating a weightless cushion that reflects light like a calm lake at dawn.</p>
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-purple-500"><Sun size={20} /></div>
+                <div>
+                  <h4 className="font-bold text-lg">Daytime Radiance</h4>
+                  <p className="text-sm text-slate-500">Subtle shimmer for business elegance and brunch glows.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-purple-500"><Moon size={20} /></div>
+                <div>
+                  <h4 className="font-bold text-lg">Twilight Drama</h4>
+                  <p className="text-sm text-slate-500">Layered brilliance for starlit nights and high-wattage events.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quote Section */}
+      <section className="py-32 px-6 text-center">
+        <Quote className="mx-auto mb-10 text-slate-200 dark:text-slate-800" size={80} />
+        <h3 className="text-3xl md:text-5xl font-serif italic text-indigo-950 dark:text-purple-200 max-w-4xl mx-auto leading-tight">
+          "MayGloss has redefined my relationship with makeup. It's the first time a gloss feels like skincare and looks like fine jewelry."
+        </h3>
+        <p className="mt-10 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">— Elena V., Muse & Model</p>
+      </section>
+    </div>
+  );
+};
+
 // --- Root Component ---
 
 const App = () => {
@@ -948,7 +1054,15 @@ const App = () => {
     if (currentPath.startsWith('product-')) {
       const id = currentPath.split('-')[1];
       const p = PRODUCTS.find(prod => prod.id === id);
-      return p ? <ProductDetailPage product={p} addToCart={addToCart} addingId={addingToCartId} onNavigate={navigateTo} /> : null;
+      return p ? (
+        <ProductDetailPage 
+          product={p} 
+          addToCart={addToCart} 
+          addingId={addingToCartId} 
+          onNavigate={navigateTo} 
+          onNotify={addNotification}
+        />
+      ) : null;
     }
 
     switch (currentPath) {
