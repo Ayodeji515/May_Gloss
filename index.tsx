@@ -33,7 +33,10 @@ import {
   RotateCcw,
   ShieldCheck,
   ChevronRight,
-  Maximize2
+  Maximize2,
+  ChevronDown,
+  Info,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -45,8 +48,10 @@ interface Product {
   price: number;
   category: 'Shine' | 'Matte' | 'Plumper' | 'Tint';
   description: string;
+  ingredients: string[];
+  ritual: string;
   image: string;
-  images: string[]; // Added for gallery support
+  images: string[];
   isBestSeller?: boolean;
 }
 
@@ -71,6 +76,8 @@ interface Notification {
 
 // --- BRAND CONSTANTS ---
 const BRAND_PURPLE = "#C187FF";
+// Softer Light Mode Background
+const LIGHT_BG = "bg-stone-50"; 
 
 // --- Mock Data ---
 
@@ -80,7 +87,9 @@ const PRODUCTS: Product[] = [
     name: 'Amethyst Glow',
     price: 18.00,
     category: 'Shine',
-    description: 'A sophisticated lavender-tinted gloss that adapts to your natural lip pH. Infused with cold-pressed grape seed oil for a non-sticky finish. This multi-tasking formula provides high shine while deeply nourishing the delicate lip barrier.',
+    description: 'A sophisticated lavender-tinted gloss that adapts to your natural lip pH. Infused with cold-pressed grape seed oil for a non-sticky finish.',
+    ingredients: ['Vitis Vinifera (Grape) Seed Oil', 'Hyaluronic Acid', 'Shea Butter', 'Vitamin E', 'Mica'],
+    ritual: 'Swipe onto bare lips for a custom tint, or layer over lipstick for a high-wattage finish.',
     image: 'https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=800',
@@ -94,7 +103,9 @@ const PRODUCTS: Product[] = [
     name: 'Dusty Rose Matte',
     price: 22.00,
     category: 'Matte',
-    description: 'The perfect everyday neutral. Our whipped matte formula provides full-coverage pigment with a weightless feel. Designed to stay all day without drying or cracking.',
+    description: 'The perfect everyday neutral. Our whipped matte formula provides full-coverage pigment with a weightless feel.',
+    ingredients: ['Kaolin Clay', 'Aloe Barbadensis Leaf Extract', 'Sunflower Seed Wax', 'Natural Pigments'],
+    ritual: 'Apply one thin coat for a natural stain, or build for a full-coverage velvet look. Dries in 60 seconds.',
     image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800',
@@ -108,7 +119,9 @@ const PRODUCTS: Product[] = [
     name: 'Icy Plumper',
     price: 24.00,
     category: 'Plumper',
-    description: 'Instant volume with a cooling sensation. Micro-reflecting pearls make lips appear fuller instantly while cross-linked hyaluronic acid ensures long-term hydration.',
+    description: 'Instant volume with a cooling sensation. Micro-reflecting pearls make lips appear fuller instantly.',
+    ingredients: ['Mentha Piperita (Peppermint) Oil', 'Palmitoyl Tripeptide-1', 'Coconut Oil', 'Hyaluronic Acid'],
+    ritual: 'Apply daily as a lip treatment. A slight cooling sensation is expected as the botanical actives work.',
     image: 'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
@@ -121,7 +134,9 @@ const PRODUCTS: Product[] = [
     name: 'Berry Nectar Oil',
     price: 20.00,
     category: 'Tint',
-    description: 'A cushiony lip oil that drenches lips in moisture. Leaves a delicate berry stain that lasts. Perfect for the "clean girl" aesthetic.',
+    description: 'A cushiony lip oil that drenches lips in moisture. Leaves a delicate berry stain that lasts.',
+    ingredients: ['Rubus Idaeus (Raspberry) Seed Oil', 'Jojoba Ester', 'Rosehip Oil', 'Fruit AHAs'],
+    ritual: 'Use as a base for lipstick or wear alone for the ultimate hydrated lip glow. Reapply as needed.',
     image: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800',
@@ -134,7 +149,9 @@ const PRODUCTS: Product[] = [
     name: 'Twilight Sparkle',
     price: 19.00,
     category: 'Shine',
-    description: 'Multi-dimensional glitter suspended in a clear base. Designed to be worn alone for a starry effect or layered over your favorite lipstick.',
+    description: 'Multi-dimensional glitter suspended in a clear base. Designed to be worn alone or layered.',
+    ingredients: ['Biodegradable Plant-Glitter', 'Castor Oil', 'Sunflower Seed Wax', 'Vanillin'],
+    ritual: 'Focus application on the center of the lips to create a multidimensional pout that catches the light.',
     image: 'https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&q=80&w=800',
@@ -147,7 +164,9 @@ const PRODUCTS: Product[] = [
     name: 'Champagne Satin',
     price: 21.00,
     category: 'Shine',
-    description: 'A creamy, satin-finish gloss with warm gold undertones. It captures the essence of golden hour in a single swipe.',
+    description: 'A creamy, satin-finish gloss with warm gold undertones. It captures the essence of golden hour.',
+    ingredients: ['Avocado Oil', 'Candelilla Wax', 'Gold Micro-shimmer', 'Almond Oil'],
+    ritual: 'The perfect companion for a evening look. Pair with a brown lip liner for a 90s inspired glow.',
     image: 'https://images.unsplash.com/photo-1631214499558-c8cc25624941?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1631214499558-c8cc25624941?auto=format&fit=crop&q=80&w=800',
@@ -240,6 +259,47 @@ const NotificationToast = ({ notifications, remove }: { notifications: Notificat
   </div>
 );
 
+// --- Fixed ScrollToTop Component ---
+const ScrollToTop = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.scrollY > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.8, y: 20 }}
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-[150] p-4 rounded-full bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800 text-indigo-950 dark:text-purple-400 hover:scale-110 transition-transform"
+        >
+          <ChevronUp size={24} />
+        </motion.button>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // --- Navigation ---
 
 const Navbar = ({ 
@@ -258,22 +318,25 @@ const Navbar = ({
   setSearchQuery: (q: string) => void;
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const navItems = [
     { label: 'Home', path: 'home' },
-    { label: 'Shop', path: 'products' },
     { label: 'Muse', path: 'lookbook' },
     { label: 'Our Story', path: 'story' },
     { label: 'FAQ', path: 'faq' },
   ];
 
+  const categories = ['All', 'Shine', 'Matte', 'Plumper', 'Tint'];
+
   const handleNav = (path: string) => {
     setIsMenuOpen(false);
+    setIsDropdownOpen(false);
     onNavigate(path);
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[120] bg-white/90 dark:bg-slate-950/90 backdrop-blur-lg border-b border-purple-100 dark:border-slate-800 transition-all duration-500">
+    <nav className="fixed top-0 left-0 right-0 z-[120] bg-stone-50/90 dark:bg-slate-950/90 backdrop-blur-lg border-b border-purple-100 dark:border-slate-800 transition-all duration-500">
       <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-6">
         <div className="flex items-center gap-4 flex-shrink-0">
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 text-indigo-900 dark:text-purple-400 z-[130]">
@@ -288,6 +351,40 @@ const Navbar = ({
         </div>
 
         <div className="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          {/* Shop with Dropdown */}
+          <div 
+            className="relative h-20 flex items-center group cursor-pointer"
+            onMouseEnter={() => setIsDropdownOpen(true)}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
+            <button className={`flex items-center gap-1.5 hover:text-indigo-950 dark:hover:text-purple-300 transition-colors ${currentPath.startsWith('products') ? 'text-indigo-950' : ''}`}>
+              Shop <ChevronDown size={12} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-20 left-0 w-48 bg-stone-50 dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-100 dark:border-slate-800 p-4"
+                >
+                  <ul className="flex flex-col gap-3">
+                    {categories.map(cat => (
+                      <li key={cat}>
+                        <button 
+                          onClick={() => handleNav('products')} 
+                          className="w-full text-left px-4 py-2 hover:bg-purple-50 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:text-indigo-950"
+                        >
+                          {cat} Collection
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {navItems.map((item) => (
             <button 
               key={item.path}
@@ -304,7 +401,7 @@ const Navbar = ({
           <button onClick={toggleDarkMode} className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-950 transition-colors">
             {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <button onClick={() => handleNav('cart')} className="relative p-2.5 text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 rounded-full hover:bg-indigo-950 hover:text-white transition-all">
+          <button onClick={() => handleNav('cart')} className="relative p-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 rounded-full hover:bg-indigo-950 hover:text-white transition-all">
             <ShoppingBag size={20} />
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ring-2 ring-white dark:ring-slate-950" style={{ backgroundColor: BRAND_PURPLE }}>
@@ -321,9 +418,10 @@ const Navbar = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[115] bg-white dark:bg-slate-950 pt-24 px-6 lg:hidden"
+            className="fixed inset-0 z-[115] bg-stone-50 dark:bg-slate-950 pt-24 px-6 lg:hidden"
           >
             <div className="flex flex-col gap-8 text-center mt-12">
+              <button onClick={() => handleNav('products')} className="text-3xl font-serif font-bold text-indigo-950 dark:text-white">Shop</button>
               {navItems.map((item) => (
                 <button
                   key={item.path}
@@ -346,7 +444,7 @@ const Navbar = ({
 
 const ProductCard: React.FC<{ product: Product, addToCart: (p: Product) => void, isAdding: boolean, onViewDetails: (p: Product) => void }> = ({ product, addToCart, isAdding, onViewDetails }) => (
   <div onClick={() => onViewDetails(product)} className="group cursor-pointer">
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-50 dark:bg-slate-900 aspect-[4/5] mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-700">
+    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 dark:bg-slate-900 aspect-[4/5] mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-700">
       <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
       <div className="absolute inset-0 bg-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       <button 
@@ -368,10 +466,10 @@ const ProductCard: React.FC<{ product: Product, addToCart: (p: Product) => void,
   </div>
 );
 
-// --- NEW Component: Product Detail Page ---
 const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: { product: Product, addToCart: (p: Product, q: number) => void, addingId: string | null, onNavigate: (p: string) => void }) => {
   const [activeImg, setActiveImg] = useState(product.images[0]);
   const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState<'desc' | 'ingredients' | 'ritual'>('desc');
   const [zoomPos, setZoomPos] = useState({ x: 0, y: 0, show: false });
   const zoomRef = useRef<HTMLDivElement>(null);
 
@@ -397,7 +495,6 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: { produ
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
         {/* Gallery */}
         <div className="flex flex-col-reverse md:flex-row gap-6">
-          {/* Thumbnails */}
           <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto">
             {product.images.map((img, i) => (
               <button 
@@ -411,10 +508,9 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: { produ
             ))}
           </div>
 
-          {/* Main Image with Zoom */}
           <div 
             ref={zoomRef}
-            className="flex-grow relative aspect-[4/5] rounded-[3rem] overflow-hidden bg-slate-50 dark:bg-slate-900 cursor-zoom-in"
+            className="flex-grow relative aspect-[4/5] rounded-[3rem] overflow-hidden bg-slate-100 dark:bg-slate-900 cursor-zoom-in"
             onMouseMove={handleMouseMove}
             onMouseLeave={() => setZoomPos(p => ({ ...p, show: false }))}
           >
@@ -427,7 +523,6 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: { produ
               alt={product.name}
             />
             
-            {/* Zoom Overlay */}
             <AnimatePresence>
               {zoomPos.show && (
                 <motion.div 
@@ -469,28 +564,60 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: { produ
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(24 Reviews)</span>
               </div>
             </div>
-            <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed mb-10 italic">
-              "{product.description}"
-            </p>
+
+            {/* Enhanced Detail Tabs */}
+            <div className="border-b border-slate-200 dark:border-slate-800 mb-8 flex gap-8">
+              {['desc', 'ingredients', 'ritual'].map((tab) => (
+                <button 
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`pb-4 text-[10px] font-bold uppercase tracking-widest transition-all relative ${activeTab === tab ? 'text-indigo-950 dark:text-white' : 'text-slate-400 hover:text-indigo-950'}`}
+                >
+                  {tab === 'desc' ? 'Overview' : tab === 'ingredients' ? 'Ingredients' : 'The Ritual'}
+                  {activeTab === tab && (
+                    <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: BRAND_PURPLE }} />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="min-h-[140px]"
+              >
+                {activeTab === 'desc' && (
+                  <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed italic">"{product.description}"</p>
+                )}
+                {activeTab === 'ingredients' && (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    {product.ingredients.map(ing => (
+                      <div key={ing} className="flex items-center gap-2 text-sm text-slate-500">
+                        <Zap size={12} style={{ color: BRAND_PURPLE }} />
+                        <span>{ing}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {activeTab === 'ritual' && (
+                  <div className="p-6 bg-purple-50 dark:bg-slate-900 rounded-[2rem] border border-purple-100 dark:border-slate-800">
+                    <p className="text-sm text-indigo-900 dark:text-slate-300 leading-relaxed">{product.ritual}</p>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <div className="space-y-8 mb-12">
             <div className="flex items-center gap-8">
               <span className="text-xs font-bold uppercase tracking-widest text-indigo-950 dark:text-slate-300">Quantity</span>
-              <div className="flex items-center gap-6 bg-slate-50 dark:bg-slate-800 rounded-full px-6 py-3 border border-slate-100 dark:border-slate-700">
-                <button 
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  className="text-slate-400 hover:text-indigo-950 transition-colors"
-                >
-                  <Minus size={16} />
-                </button>
+              <div className="flex items-center gap-6 bg-slate-100 dark:bg-slate-800 rounded-full px-6 py-3 border border-slate-100 dark:border-slate-700">
+                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-slate-400 hover:text-indigo-950 transition-colors"><Minus size={16} /></button>
                 <span className="font-bold text-lg w-6 text-center">{quantity}</span>
-                <button 
-                  onClick={() => setQuantity(q => q + 1)}
-                  className="text-slate-400 hover:text-indigo-950 transition-colors"
-                >
-                  <Plus size={16} />
-                </button>
+                <button onClick={() => setQuantity(q => q + 1)} className="text-slate-400 hover:text-indigo-950 transition-colors"><Plus size={16} /></button>
               </div>
             </div>
 
@@ -506,115 +633,27 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: { produ
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+            <div className="flex items-center gap-3 p-4 bg-slate-100 dark:bg-slate-900 rounded-2xl">
               <Truck size={18} className="text-slate-400" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Free Express Delivery</span>
             </div>
-            <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+            <div className="flex items-center gap-3 p-4 bg-slate-100 dark:bg-slate-900 rounded-2xl">
               <RotateCcw size={18} className="text-slate-400" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">30-Day Glowing Returns</span>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Recommended Section */}
-      <section className="mt-40">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-serif font-bold text-indigo-950 dark:text-white">Complete Your Routine</h2>
-          <p className="text-slate-400 mt-2">Muses also adored these signature shades</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {PRODUCTS.filter(p => p.id !== product.id).slice(0, 3).map(p => (
-             <ProductCard 
-                key={p.id} 
-                product={p} 
-                addToCart={(prod) => addToCart(prod, 1)} 
-                isAdding={addingId === p.id} 
-                onViewDetails={(prod) => onNavigate(`product-${prod.id}`)}
-             />
-          ))}
-        </div>
-      </section>
     </div>
   );
 };
 
-const FAQPage = () => {
-  const [open, setOpen] = useState<number | null>(0);
-  const faqs = [
-    { q: "Is MayGloss vegan and cruelty-free?", a: "Absolutely. Every single MayGloss formula is 100% vegan and we are proudly certified cruelty-free. We never test on animals, nor do we use animal-derived ingredients." },
-    { q: "How long does shipping usually take?", a: "Orders are processed within 24-48 hours. Domestic shipping typically takes 3-5 business days, while international orders can take 7-14 business days depending on the location." },
-    { q: "Can I return my gloss if the shade isn't right?", a: "Yes! We offer a 30-day 'Perfect Shine' guarantee. If you're not completely happy with your shade, you can return or exchange it for a different color within 30 days of purchase." },
-    { q: "How should I store my MayGloss?", a: "Store your glosses in a cool, dry place away from direct sunlight. High temperatures can affect the botanical oil consistency. Ensure the cap is tightly closed after each use." },
-    { q: "Are the plumping glosses painful?", a: "Not at all. Our Icy Plumper uses cooling botanical extracts and micro-hyaluronic spheres to create volume without the stinging or burning sensation common in traditional plumpers." }
-  ];
-
-  return (
-    <div className="pt-32 pb-32 px-6 max-w-3xl mx-auto">
-      <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-12 text-center">Common Enquiries</h1>
-      <div className="space-y-6">
-        {faqs.map((faq, i) => (
-          <div key={i} className="border-b border-slate-100 dark:border-slate-800 pb-6">
-            <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex justify-between items-center text-left gap-4">
-              <span className="font-bold text-lg text-indigo-950 dark:text-white">{faq.q}</span>
-              <Plus size={20} className={`transform transition-transform ${open === i ? 'rotate-45' : ''}`} style={{ color: BRAND_PURPLE }} />
-            </button>
-            <AnimatePresence>
-              {open === i && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                  <p className="mt-4 text-slate-500 dark:text-slate-400 leading-relaxed">{faq.a}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const InfoPage = ({ title, content }: { title: string, content: React.ReactNode }) => (
-  <div className="pt-32 pb-32 px-6 max-w-4xl mx-auto">
-    <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-12">{title}</h1>
-    <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 leading-relaxed space-y-6">
-      {content}
-    </div>
-  </div>
-);
-
-const ScrollToTop = () => {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const handleScroll = () => setShow(window.scrollY > 400);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-10 right-10 p-4 rounded-full bg-white dark:bg-slate-900 shadow-2xl z-[150] text-indigo-950 dark:text-white border border-purple-50"
-        >
-          <ChevronUp size={24} style={{ color: BRAND_PURPLE }} />
-        </motion.button>
-      )}
-    </AnimatePresence>
-  );
-};
-
-// --- FIX: Added missing HomePage component ---
 const HomePage = ({ onNavigate, addToCart, addingId }: { onNavigate: (p: string) => void, addToCart: (p: Product) => void, addingId: string | null }) => {
   const bestSellers = PRODUCTS.filter(p => p.isBestSeller);
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
+    <div className="bg-stone-50 dark:bg-slate-950">
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=2000" 
@@ -658,41 +697,15 @@ const HomePage = ({ onNavigate, addToCart, addingId }: { onNavigate: (p: string)
             </div>
           </motion.div>
         </div>
-
-        {/* Floating Features */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full max-w-5xl px-4 hidden md:flex justify-between gap-12 text-white/80">
-          <div className="flex items-center gap-4">
-            <Leaf size={20} className="text-purple-300" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">100% Vegan Formulas</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Droplets size={20} className="text-purple-300" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Hyaluronic Hydration</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <ShieldCheck size={20} className="text-purple-300" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Cruelty-Free Certified</span>
-          </div>
-        </div>
       </section>
 
-      {/* Best Sellers */}
+      {/* Featured Products */}
       <section className="py-32 px-4 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-          <div>
-            <span className="text-[11px] font-black uppercase tracking-[0.4em] mb-4 block" style={{ color: BRAND_PURPLE }}>Curated Essentials</span>
-            <h2 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white">Best Sellers</h2>
-          </div>
-          <button 
-            onClick={() => onNavigate('products')}
-            className="text-xs font-bold uppercase tracking-[0.2em] border-b-2 pb-2 hover:opacity-70 transition-opacity"
-            style={{ borderBottomColor: BRAND_PURPLE }}
-          >
-            View All Shades
-          </button>
+        <div className="text-center mb-20">
+          <span className="text-[11px] font-black uppercase tracking-[0.4em] mb-4 block" style={{ color: BRAND_PURPLE }}>Muse Favorites</span>
+          <h2 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white">The Essential Set</h2>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {bestSellers.map(product => (
             <ProductCard 
               key={product.id} 
@@ -702,67 +715,6 @@ const HomePage = ({ onNavigate, addToCart, addingId }: { onNavigate: (p: string)
               onViewDetails={(p) => onNavigate(`product-${p.id}`)}
             />
           ))}
-        </div>
-      </section>
-
-      {/* Brand Ethos */}
-      <section className="bg-slate-50 dark:bg-slate-900 py-32 rounded-[4rem] mx-4 mb-32 overflow-hidden relative">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-          <div className="relative">
-             <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800" className="rounded-[3rem] shadow-2xl relative z-10" alt="Ethos" />
-             <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full blur-3xl opacity-30 z-0" style={{ backgroundColor: BRAND_PURPLE }} />
-          </div>
-          <div>
-            <Quote size={48} className="text-purple-300 mb-8" />
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-8 leading-tight">
-              "We believe that <span className="italic">conscious beauty</span> should be an effortless luxury."
-            </h2>
-            <p className="text-lg text-slate-500 dark:text-slate-400 mb-12 leading-relaxed">
-              Every MayGloss product is engineered with the highest quality botanical extracts. 
-              We replace harsh synthetic thickeners with nourishing seed oils, creating a shine 
-              that heals while it highlights.
-            </p>
-            <div className="grid grid-cols-2 gap-12">
-              <div>
-                <Sparkles className="mb-4" style={{ color: BRAND_PURPLE }} />
-                <h4 className="font-bold text-indigo-950 dark:text-white mb-2">Mirror Shine</h4>
-                <p className="text-sm text-slate-400">High-refractive index oils for a glass-like finish.</p>
-              </div>
-              <div>
-                <Droplets className="mb-4" style={{ color: BRAND_PURPLE }} />
-                <h4 className="font-bold text-indigo-950 dark:text-white mb-2">Serum Base</h4>
-                <p className="text-sm text-slate-400">Lip-treatment formula that stays silky, never sticky.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews */}
-      <section className="py-32 bg-white dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-4">Muse Testimonials</h2>
-            <div className="flex justify-center gap-1">
-              {[...Array(5)].map((_, i) => <Star key={i} size={20} className="fill-purple-400 text-purple-400" />)}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {REVIEWS.map(review => (
-              <div key={review.id} className="bg-slate-50 dark:bg-slate-900 p-10 rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-4 mb-8">
-                  <img src={review.avatar} className="w-12 h-12 rounded-full object-cover" alt={review.name} />
-                  <div>
-                    <h4 className="font-bold text-indigo-950 dark:text-white">{review.name}</h4>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{review.date}</span>
-                  </div>
-                </div>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed italic mb-6">"{review.text}"</p>
-                <StarRating rating={review.rating} />
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     </div>
@@ -795,15 +747,6 @@ const App = () => {
     }
   }, [darkMode]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('maygloss_cart');
-    if (saved) setCart(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('maygloss_cart', JSON.stringify(cart));
-  }, [cart]);
-
   const addNotification = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substr(2, 9);
     setNotifications(prev => [...prev, { id, message, type }]);
@@ -832,20 +775,13 @@ const App = () => {
     }, 600);
   };
 
-  const removeFromCart = (id: string) => {
-    const item = cart.find(i => i.id === id);
-    setCart(prev => prev.filter(i => i.id !== id));
-    if(item) addNotification(`Removed ${item.name} from bag.`, 'info');
-  };
-
   const renderContent = () => {
     if(isNavigating) return (
         <div className="min-h-[70vh] flex items-center justify-center">
-            <LoadingSpinner text="Refining your glow..." />
+            <LoadingSpinner text="Elevating your shine..." />
         </div>
     );
 
-    // Product Detail Routing
     if (currentPath.startsWith('product-')) {
       const prodId = currentPath.split('-')[1];
       const product = PRODUCTS.find(p => p.id === prodId);
@@ -869,44 +805,6 @@ const App = () => {
             </div>
         </div>
       );
-      case 'story': return (
-          <div className="pt-32 pb-32 px-6 max-w-4xl mx-auto">
-              <h1 className="text-6xl font-serif font-bold text-indigo-950 dark:text-white mb-10 leading-tight italic">Botanical Passion.</h1>
-              <img src="https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=1200" className="w-full h-[400px] object-cover rounded-[3rem] mb-12 shadow-2xl" alt="Our Mission" />
-              <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8">At MayGloss, we believe that beauty should never be a compromise. Our journey began in a small botanical lab, where we obsessed over one problem: Why are high-shine lipglosses always so sticky and drying?</p>
-              <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed">By replacing synthetic polymers with cold-pressed botanical oils and micro-hyaluronic spheres, we created a texture that feels like a luxurious serum.</p>
-          </div>
-      );
-      case 'lookbook': return (
-          <div className="pt-32 pb-32 px-4 max-w-7xl mx-auto">
-              <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-16 text-center">The Muse Gallery</h1>
-              <div className="columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                    <img key={i} src={`https://images.unsplash.com/photo-${1600000000000 + (i * 123456)}?auto=format&fit=crop&q=80&w=800`} className="w-full rounded-[2rem] shadow-lg" alt="Muse" />
-                ))}
-              </div>
-          </div>
-      );
-      case 'faq': return <FAQPage />;
-      case 'shipping': return <InfoPage title="Shipping Policy" content={<p>All MayGloss orders are handled with botanical care. We ship globally from our labs in California. Orders over $60 qualify for complimentary priority shipping.</p>} />;
-      case 'returns': return <InfoPage title="Return & Exchange" content={<p>We stand by our formulas. If you are not 100% glowing after using MayGloss, we offer simple 30-day returns on all products.</p>} />;
-      case 'privacy': return <InfoPage title="Privacy Concierge" content={<p>Your data is as safe as your lips. We never sell your personal information and use end-to-end encryption for all secure payments.</p>} />;
-      case 'contact': return (
-        <div className="pt-32 pb-32 px-6 max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl font-serif font-bold text-indigo-950 dark:text-white mb-8">Let's Connect</h1>
-            <p className="text-slate-500 mb-12">Email us at concierge@maygloss.com or reach out via Instagram @MayGloss.</p>
-            <div className="flex justify-center gap-8">
-                <div className="p-10 bg-slate-50 dark:bg-slate-900 rounded-[3rem] shadow-sm flex flex-col items-center">
-                    <MessageCircle size={32} className="text-purple-400 mb-4" />
-                    <span className="font-bold">Live Chat</span>
-                </div>
-                <div className="p-10 bg-slate-50 dark:bg-slate-900 rounded-[3rem] shadow-sm flex flex-col items-center">
-                    <Phone size={32} className="text-purple-400 mb-4" />
-                    <span className="font-bold">Call Us</span>
-                </div>
-            </div>
-        </div>
-      );
       case 'cart': return (
         <div className="pt-32 pb-32 px-4 max-w-5xl mx-auto">
             <h1 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white mb-16">Shopping Bag</h1>
@@ -918,15 +816,13 @@ const App = () => {
             ) : (
                 <div className="space-y-8">
                     {cart.map(item => (
-                        <div key={item.id} className="flex gap-8 items-center bg-slate-50 dark:bg-slate-900 p-6 rounded-3xl">
+                        <div key={item.id} className="flex gap-8 items-center bg-stone-100 dark:bg-slate-900 p-6 rounded-3xl">
                             <img src={item.image} className="w-20 h-20 rounded-2xl object-cover" alt={item.name} />
                             <div className="flex-grow">
                                 <h3 className="font-bold text-lg">{item.name}</h3>
                                 <p className="text-slate-400">${item.price.toFixed(2)}</p>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-600"><Trash2 size={20} /></button>
-                            </div>
+                            <button onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))} className="text-red-400 hover:text-red-600"><Trash2 size={20} /></button>
                         </div>
                     ))}
                     <button onClick={() => navigateTo('home')} className="w-full bg-indigo-950 text-white py-6 rounded-full font-bold uppercase tracking-widest text-xs">Checkout securely</button>
@@ -939,7 +835,7 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-500">
+    <div className="min-h-screen bg-stone-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-500">
       <Navbar 
         cartCount={cart.reduce((sum, i) => sum + i.quantity, 0)} 
         onNavigate={navigateTo} 
@@ -957,7 +853,7 @@ const App = () => {
         </AnimatePresence>
       </main>
 
-      <footer className="bg-slate-50 dark:bg-slate-950 pt-32 pb-12 px-6 border-t border-slate-100 dark:border-slate-900">
+      <footer className="bg-stone-100 dark:bg-slate-900 pt-32 pb-12 px-6 border-t border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
           <div className="space-y-8">
             <div className="flex items-center gap-2">
@@ -975,19 +871,15 @@ const App = () => {
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Concierge</h3>
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Support</h3>
             <ul className="space-y-4 text-sm text-slate-500">
-              <li onClick={() => navigateTo('faq')} className="hover:text-indigo-950 cursor-pointer transition-colors">Support FAQ</li>
+              <li onClick={() => navigateTo('faq')} className="hover:text-indigo-950 cursor-pointer transition-colors">Enquiries FAQ</li>
               <li onClick={() => navigateTo('shipping')} className="hover:text-indigo-950 cursor-pointer transition-colors">Shipping Care</li>
-              <li onClick={() => navigateTo('returns')} className="hover:text-indigo-950 cursor-pointer transition-colors">Returns & Refunds</li>
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Legals</h3>
-            <ul className="space-y-4 text-sm text-slate-500">
-              <li onClick={() => navigateTo('privacy')} className="hover:text-indigo-950 cursor-pointer transition-colors">Privacy Promise</li>
-              <li onClick={() => navigateTo('contact')} className="hover:text-indigo-950 cursor-pointer transition-colors">Direct Enquiry</li>
-            </ul>
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-8" style={{ color: BRAND_PURPLE }}>Contact</h3>
+            <p className="text-sm text-slate-500">concierge@maygloss.com</p>
           </div>
         </div>
         <div className="text-center text-[10px] font-bold uppercase tracking-[0.4em] text-slate-300">
