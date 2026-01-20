@@ -2,6 +2,7 @@
   "name": "MayGloss",
   "description": "A luxury e-commerce platform for high-shine, non-sticky lipglosses.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
   ]
 }
