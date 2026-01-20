@@ -98,7 +98,7 @@ const BANK_DETAILS = {
   bankName: "Zenith Radiant Bank"
 };
 
-const SYSTEM_INSTRUCTION = "You are a luxury beauty consultant for MayGloss. You are elegant, helpful, and an expert in lip hydration and aesthetics. You recommend MayGloss products (Amethyst Glow, Dusty Rose Matte, Icy Plumper, Berry Nectar Oil, Twilight Sparkle, Champagne Satin) based on user needs. Keep responses concise, helpful, and high-end.";
+const SYSTEM_INSTRUCTION = "You are a luxury beauty consultant for MayGloss. Your expertise is STRICTLY LIMITED to MayGloss products and the brand itself. You must ONLY answer questions about MayGloss products (Amethyst Glow, Dusty Rose Matte, Icy Plumper, Berry Nectar Oil, Twilight Sparkle, Champagne Satin), their ingredients, application rituals, and company story. If a user asks about anything unrelated to MayGloss, general knowledge, other brands, or off-topic subjects, you must politely decline and guide them back to our lip care collection. Stay elegant, helpful, and maintain a high-end brand voice.";
 
 // --- Mock Data ---
 
@@ -146,7 +146,7 @@ const PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
     images: [
       'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&get=80&w=800',
       'https://images.unsplash.com/photo-1557053910-d9eaba703fa8?auto=format&fit=crop&q=80&w=800'
     ]
   },
