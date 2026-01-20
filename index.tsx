@@ -497,10 +497,12 @@ const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: any) => (
 const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }: any) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
 
   const handleNav = (path: string) => {
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
+    setIsMobileShopOpen(false);
     onNavigate(path);
   };
 
@@ -519,27 +521,43 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
 
         <div className="hidden lg:flex items-center gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
           <button onClick={() => handleNav('home')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'home' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'home' ? BRAND_PURPLE : 'transparent' }}>Home</button>
-          <div className="relative group" onMouseEnter={() => setIsDropdownOpen(true)} onMouseLeave={() => setIsDropdownOpen(false)}>
+          
+          <div 
+            className="relative h-20 flex items-center group cursor-pointer" 
+            onMouseEnter={() => setIsDropdownOpen(true)} 
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
             <button className={`flex items-center gap-1 hover:text-indigo-950 transition-colors ${currentPath === 'products' ? 'text-indigo-950' : ''}`}>
               Shop <ChevronDown size={14} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
+            
             <AnimatePresence>
               {isDropdownOpen && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0, y: 10 }} 
-                  className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-100 dark:border-slate-800 p-4 overflow-hidden z-[130]"
+                  className="absolute top-full left-0 w-64 pt-4 z-[130]"
                 >
-                  <div className="flex flex-col gap-4">
-                    {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
-                      <button key={c} onClick={() => handleNav('products')} className="text-left hover:text-indigo-950 dark:hover:text-purple-300 transition-colors text-[10px] uppercase font-bold tracking-widest p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">{c} Collection</button>
-                    ))}
+                  <div className="bg-white dark:bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] border border-slate-100 dark:border-slate-800 p-6 backdrop-blur-xl bg-opacity-95 dark:bg-opacity-95">
+                    <div className="flex flex-col gap-2">
+                      {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
+                        <button 
+                          key={c} 
+                          onClick={() => handleNav('products')} 
+                          className="text-left hover:text-indigo-950 dark:hover:text-purple-300 transition-all text-[11px] uppercase font-bold tracking-[0.15em] p-3 hover:bg-stone-50 dark:hover:bg-slate-800/50 rounded-xl flex items-center justify-between group/item"
+                        >
+                          <span>{c} Collection</span>
+                          <ChevronRight size={12} className="opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
           <button onClick={() => handleNav('lookbook')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'lookbook' ? 'text-indigo-950' : ''}`}>Muse</button>
           <button onClick={() => handleNav('consultant')} className={`flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 transition-all hover:scale-105 ${currentPath === 'consultant' ? 'ring-2 ring-purple-300' : ''}`}><Sparkle size={14} /> AI Guide</button>
           <button onClick={() => handleNav('story')} className="hover:text-indigo-950 transition-colors">Story</button>
@@ -565,12 +583,39 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode }
             initial={{ x: '-100%' }} 
             animate={{ x: 0 }} 
             exit={{ x: '-100%' }} 
-            transition={{ type: 'spring', damping: 25 }} 
-            className="fixed inset-0 z-[115] bg-stone-50 dark:bg-slate-950 pt-24 px-6 lg:hidden flex flex-col gap-8 overflow-y-auto"
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }} 
+            className="fixed inset-0 z-[115] bg-stone-50 dark:bg-slate-950 pt-24 px-8 lg:hidden flex flex-col gap-6 overflow-y-auto"
           >
-            {['home', 'products', 'lookbook', 'consultant', 'story', 'faq', 'cart'].map(p => (
-              <button key={p} onClick={() => handleNav(p)} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">{p === 'consultant' ? 'AI Guide' : p}</button>
-            ))}
+            <button onClick={() => handleNav('home')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Home</button>
+            
+            <div className="space-y-4">
+              <button 
+                onClick={() => setIsMobileShopOpen(!isMobileShopOpen)} 
+                className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors flex items-center justify-between w-full"
+              >
+                Shop <ChevronDown size={32} className={`transition-transform duration-300 ${isMobileShopOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {isMobileShopOpen && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }} 
+                    animate={{ height: 'auto', opacity: 1 }} 
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden flex flex-col gap-4 pl-4 border-l-2 border-purple-100"
+                  >
+                    {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
+                      <button key={c} onClick={() => handleNav('products')} className="text-left text-xl font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-950 transition-colors">{c} Collection</button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <button onClick={() => handleNav('lookbook')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Muse</button>
+            <button onClick={() => handleNav('consultant')} className="text-4xl font-serif font-bold text-purple-400 capitalize text-left transition-colors flex items-center gap-4">AI Guide <Sparkle size={32} /></button>
+            <button onClick={() => handleNav('story')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Story</button>
+            <button onClick={() => handleNav('faq')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">FAQ</button>
+            <button onClick={() => handleNav('cart')} className="text-4xl font-serif font-bold text-indigo-950 dark:text-white capitalize text-left hover:text-purple-400 transition-colors">Cart</button>
           </motion.div>
         )}
       </AnimatePresence>
