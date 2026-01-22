@@ -51,7 +51,13 @@ import {
   Facebook,
   Wallet,
   Building2,
-  Lock
+  Lock,
+  Target,
+  Users,
+  Eye,
+  Microscope,
+  Sprout,
+  HeartHandshake
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenAI } from "@google/genai";
@@ -211,14 +217,20 @@ const ChatInterface = ({ messages, setMessages, loading, setLoading, input, setI
     setInput("");
     setLoading(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+      // Fix: Follow guidelines for initialization and usage
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-pro-preview',
-        contents: [...messages, userMsg].map(m => ({ role: m.role, parts: [{ text: m.parts }] })),
+        contents: [...messages, userMsg].map(m => ({ 
+          role: m.role, 
+          parts: [{ text: m.parts }] 
+        })),
         config: { systemInstruction: SYSTEM_INSTRUCTION }
       });
-      setMessages((prev: any) => [...prev, { role: 'model', parts: response.text || "I couldn't generate a response." }]);
+      // Fix: Correct usage of response.text as a property
+      setMessages((prev: any) => [...prev, { role: 'model', parts: response.text || "I'm sorry, I couldn't process that request right now." }]);
     } catch (e) {
+      console.error(e);
       setMessages((prev: any) => [...prev, { role: 'model', parts: "Consultation currently offline. Please check your network." }]);
     } finally {
       setLoading(false);
@@ -230,7 +242,11 @@ const ChatInterface = ({ messages, setMessages, loading, setLoading, input, setI
     if (!SpeechRecognition) return alert("Voice not supported.");
     const rec = new SpeechRecognition();
     rec.onstart = () => setIsRecording(true);
-    rec.onresult = (e: any) => { setInput(e.results[0][0].transcript); sendMessage(e.results[0][0].transcript); };
+    rec.onresult = (e: any) => { 
+      const transcript = e.results[0][0].transcript;
+      setInput(transcript); 
+      sendMessage(transcript); 
+    };
     rec.onend = () => setIsRecording(false);
     rec.start();
   };
@@ -253,7 +269,7 @@ const ChatInterface = ({ messages, setMessages, loading, setLoading, input, setI
           value={input} onChange={(e) => setInput(e.target.value)} 
           onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
           placeholder="Ask our AI expert..." 
-          className="flex-grow bg-transparent px-4 py-2 outline-none text-sm"
+          className="flex-grow bg-transparent px-4 py-2 outline-none text-sm dark:text-white"
         />
         <button onClick={startVoice} className={`p-2.5 rounded-full ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
           <Mic size={18} />
@@ -324,12 +340,13 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode, 
                 )}
               </AnimatePresence>
             </div>
-            <button onClick={() => handleNav('lookbook')} className="hover:text-indigo-950 transition-colors">Lookbook</button>
+            <button onClick={() => handleNav('story')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'story' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'story' ? BRAND_PURPLE : 'transparent' }}>Story</button>
+            <button onClick={() => handleNav('about')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'about' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'about' ? BRAND_PURPLE : 'transparent' }}>About</button>
             <button onClick={() => handleNav('consultant')} className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-full hover:scale-105 transition-all"><Sparkle size={14} /> AI Expert</button>
           </div>
 
           <div className="hidden md:flex flex-grow max-w-sm relative group ml-4">
-             <input type="text" placeholder="Find your radiance..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => { if(currentPath !== 'products') onNavigate('products'); }} className="w-full bg-slate-100/50 dark:bg-slate-900/50 border border-transparent focus:border-purple-200 dark:focus:border-purple-900/50 rounded-full py-2.5 pl-5 pr-12 text-xs outline-none focus:ring-4 ring-purple-100 dark:ring-purple-900/10 transition-all" />
+             <input type="text" placeholder="Find your radiance..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => { if(currentPath !== 'products') onNavigate('products'); }} className="w-full bg-slate-100/50 dark:bg-slate-900/50 border border-transparent focus:border-purple-200 dark:focus:border-purple-900/50 rounded-full py-2.5 pl-5 pr-12 text-xs outline-none focus:ring-4 ring-purple-100 dark:ring-purple-900/10 transition-all dark:text-white" />
              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors" size={16} />
           </div>
         </div>
@@ -347,7 +364,7 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode, 
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - 100% Height */}
       <AnimatePresence>
         {isMenuOpen && (
           <div className="fixed inset-0 z-[200] lg:hidden">
@@ -355,47 +372,49 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode, 
             <motion.div 
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white dark:bg-slate-950 shadow-2xl flex flex-col"
+              className="absolute top-0 left-0 bottom-0 h-full w-full max-w-sm bg-white dark:bg-slate-950 shadow-2xl flex flex-col overflow-hidden"
             >
               <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-serif font-bold text-lg" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
-                  <span className="font-serif font-bold text-xl text-indigo-950 dark:text-white">MayGloss</span>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-serif font-bold text-xl" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
+                  <span className="font-serif font-bold text-2xl text-indigo-950 dark:text-white">MayGloss</span>
                 </div>
-                <button onClick={() => setIsMenuOpen(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-                  <X size={26} className="text-slate-500" />
+                <button onClick={() => setIsMenuOpen(false)} className="p-3 rounded-full bg-slate-100 dark:bg-slate-900 hover:scale-110 transition-transform">
+                  <X size={28} className="text-slate-500" />
                 </button>
               </div>
 
-              <div className="flex-grow p-8 flex flex-col gap-8 overflow-y-auto">
-                <div className="flex flex-col gap-6">
-                  <button onClick={() => handleNav('home')} className="text-4xl font-serif font-bold text-left hover:text-purple-400 transition-colors">Home</button>
-                  <div className="space-y-4">
-                    <button onClick={() => setIsMobileShopOpen(!isMobileShopOpen)} className="text-4xl font-serif font-bold text-left flex items-center justify-between w-full hover:text-purple-400 transition-colors">
-                      Shop <ChevronDown size={28} className={`transition-transform ${isMobileShopOpen ? 'rotate-180' : ''}`} />
+              <div className="flex-grow p-10 flex flex-col gap-10 overflow-y-auto">
+                <div className="flex flex-col gap-8">
+                  <button onClick={() => handleNav('home')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">Home</button>
+                  <div className="space-y-6">
+                    <button onClick={() => setIsMobileShopOpen(!isMobileShopOpen)} className="text-5xl font-serif font-bold text-left flex items-center justify-between w-full hover:text-purple-400 transition-colors dark:text-white">
+                      Shop <ChevronDown size={32} className={`transition-transform ${isMobileShopOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <AnimatePresence>
                       {isMobileShopOpen && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col gap-5 pl-6 border-l-2 border-purple-100 dark:border-purple-900/50 overflow-hidden">
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col gap-6 pl-6 border-l-4 border-purple-200 dark:border-purple-900/50 overflow-hidden">
                           {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
-                            <button key={c} onClick={() => handleNav('products')} className="text-left text-xl font-bold uppercase tracking-[0.15em] text-slate-400 hover:text-indigo-950 dark:hover:text-white">{c} Collection</button>
+                            <button key={c} onClick={() => handleNav('products')} className="text-left text-2xl font-bold uppercase tracking-[0.1em] text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors">{c} Collection</button>
                           ))}
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
-                  <button onClick={() => handleNav('lookbook')} className="text-4xl font-serif font-bold text-left hover:text-purple-400 transition-colors">Lookbook</button>
-                  <button onClick={() => handleNav('consultant')} className="text-4xl font-serif font-bold text-purple-400 text-left flex items-center gap-4">AI Expert <Sparkle size={32} /></button>
-                  <button onClick={() => handleNav('cart')} className="text-4xl font-serif font-bold text-left hover:text-purple-400 transition-colors">My Bag</button>
+                  <button onClick={() => handleNav('story')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">Our Story</button>
+                  <button onClick={() => handleNav('about')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">About Us</button>
+                  <button onClick={() => handleNav('lookbook')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">Lookbook</button>
+                  <button onClick={() => handleNav('consultant')} className="text-5xl font-serif font-bold text-purple-400 text-left flex items-center gap-4 transition-transform hover:translate-x-2">AI Expert <Sparkle size={32} /></button>
                 </div>
               </div>
 
-              <div className="p-8 border-t border-slate-100 dark:border-slate-800 flex justify-between">
-                 <div className="flex gap-6">
-                    <Instagram size={22} className="text-slate-400" />
-                    <Twitter size={22} className="text-slate-400" />
-                    <Facebook size={22} className="text-slate-400" />
+              <div className="p-10 bg-stone-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-6">
+                 <div className="flex gap-8">
+                    <Instagram size={28} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
+                    <Twitter size={28} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
+                    <Facebook size={28} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
                  </div>
+                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Global Radiance v2.1</p>
               </div>
             </motion.div>
           </div>
@@ -411,6 +430,7 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
   const bestSellers = PRODUCTS.slice(0, 3);
   return (
     <div className="flex flex-col">
+      {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-20">
         <div className="absolute inset-0 z-0">
           <img src="https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=2000" className="w-full h-full object-cover opacity-90 dark:opacity-40" alt="Hero" />
@@ -423,102 +443,325 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
             <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 font-light mb-12 leading-relaxed">Experience a serum-infused ritual that transforms your lips into mirror-like reflections of nature's purity.</p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-6">
               <button onClick={() => onNavigate('products')} className="px-12 py-6 bg-indigo-950 text-white rounded-full font-bold text-xs uppercase tracking-widest shadow-2xl hover:scale-110 active:scale-95 transition-all">Shop The Palette</button>
-              <button onClick={() => onNavigate('consultant')} className="px-12 py-6 bg-white dark:bg-slate-900 text-indigo-950 dark:text-white border border-slate-200 dark:border-slate-800 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"><Bot size={18} /> AI Consultant</button>
+              <button onClick={() => onNavigate('about')} className="px-12 py-6 bg-white dark:bg-slate-900 text-indigo-950 dark:text-white border border-slate-200 dark:border-slate-800 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Explore The Vision</button>
             </div>
           </motion.div>
         </div>
       </section>
+
+      {/* Benefits Bar */}
       <section className="py-20 bg-white dark:bg-slate-900 border-y border-slate-50 dark:border-slate-900">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-          <div className="flex flex-col items-center gap-3">
+          <motion.div whileHover={{ y: -5 }} className="flex flex-col items-center gap-3">
             <Leaf size={24} className="text-purple-400" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">100% Vegan</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
+          </motion.div>
+          <motion.div whileHover={{ y: -5 }} className="flex flex-col items-center gap-3">
             <Droplets size={24} className="text-purple-400" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hyaluronic Acid</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
+          </motion.div>
+          <motion.div whileHover={{ y: -5 }} className="flex flex-col items-center gap-3">
             <ShieldCheck size={24} className="text-purple-400" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Derm Tested</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
+          </motion.div>
+          <motion.div whileHover={{ y: -5 }} className="flex flex-col items-center gap-3">
             <Sparkles size={24} className="text-purple-400" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mirror Finish</span>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Philosophy Section */}
+      <section className="py-32 bg-stone-50 dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-24">
+          <div className="flex-1 space-y-10">
+            <h2 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white leading-tight">Radical <br/>Transparency</h2>
+            <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed">We believe beauty shouldn't be a mystery. From our cold-pressed seed oils to our sustainable packaging, every decision is made with the health of your lips and our planet at the core.</p>
+            <div className="grid grid-cols-2 gap-8">
+               <div className="space-y-4">
+                  <h4 className="font-black uppercase tracking-widest text-xs text-purple-400">Cold Pressed</h4>
+                  <p className="text-sm text-slate-400 italic">Retaining maximum nutrients for deeper cellular repair.</p>
+               </div>
+               <div className="space-y-4">
+                  <h4 className="font-black uppercase tracking-widest text-xs text-purple-400">Lab Proven</h4>
+                  <p className="text-sm text-slate-400 italic">Every formula is tested for 24-hour hydration stability.</p>
+               </div>
+            </div>
+            <button onClick={() => onNavigate('story')} className="text-xs font-black uppercase tracking-[0.3em] text-indigo-950 dark:text-white border-b-2 border-purple-400 pb-2 hover:opacity-70 transition-opacity">Read Our Lab Story</button>
+          </div>
+          <div className="flex-1 relative">
+             <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" alt="Lab Work" />
+             </div>
+             <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center p-8 text-center text-[10px] font-black uppercase tracking-widest text-purple-600 shadow-xl border border-white dark:border-slate-800">
+                Crafted in Small Batches
+             </div>
           </div>
         </div>
+      </section>
+
+      {/* Ingredient Deep-Dive */}
+      <section className="py-32 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-24">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 mb-4 block">The Alchemy</span>
+          <h2 className="text-5xl md:text-6xl font-serif font-bold dark:text-white">Botanical Intelligence</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+           <div className="text-center space-y-6 group">
+              <div className="w-20 h-20 bg-stone-100 dark:bg-slate-900 rounded-full mx-auto flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                 <Microscope size={32} />
+              </div>
+              <h3 className="text-2xl font-serif font-bold dark:text-white">Molecular Shine</h3>
+              <p className="text-slate-400 font-light leading-relaxed">Our 'Luminous Bond' technology reflects light at the molecular level, creating a 3D mirror finish without the use of sticky polymers.</p>
+           </div>
+           <div className="text-center space-y-6 group">
+              <div className="w-20 h-20 bg-stone-100 dark:bg-slate-900 rounded-full mx-auto flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                 <Sprout size={32} />
+              </div>
+              <h3 className="text-2xl font-serif font-bold dark:text-white">Phyto-Serums</h3>
+              <p className="text-slate-400 font-light leading-relaxed">Infused with Vitis Vinifera and Raspberry Seed oils, our glosses function as a high-potency serum that heals while it beautifies.</p>
+           </div>
+           <div className="text-center space-y-6 group">
+              <div className="w-20 h-20 bg-stone-100 dark:bg-slate-900 rounded-full mx-auto flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                 <Target size={32} />
+              </div>
+              <h3 className="text-2xl font-serif font-bold dark:text-white">Precision Tint</h3>
+              <p className="text-slate-400 font-light leading-relaxed">Micro-encapsulated pigments react to your lip's natural pH, delivering a custom radiance that is uniquely yours.</p>
+           </div>
+        </div>
+      </section>
+
+      {/* Ritual CTA */}
+      <section className="py-32 bg-indigo-950 text-white mx-6 rounded-[5rem] overflow-hidden relative">
+         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&q=80&w=2000')] bg-cover opacity-10 grayscale" />
+         <div className="relative z-10 max-w-4xl mx-auto text-center px-8">
+            <h2 className="text-5xl md:text-8xl font-serif font-bold mb-10 leading-tight">Elevate Your <br/>Daily Ritual</h2>
+            <p className="text-xl text-slate-400 font-light mb-12 max-w-2xl mx-auto">Join the MayGloss community and receive personalized beauty consultations, early access to new shades, and the secrets of botanical radiance.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+               <input type="email" placeholder="Enter your email" className="bg-white/10 border border-white/20 px-8 py-5 rounded-full text-white outline-none focus:ring-2 ring-purple-400 min-w-[300px]" />
+               <button className="bg-white text-indigo-950 px-12 py-5 rounded-full font-bold uppercase tracking-widest text-xs hover:scale-110 active:scale-95 transition-all">Subscribe</button>
+            </div>
+         </div>
       </section>
     </div>
   );
 };
 
-// --- ProductCard ---
+// --- About Page ---
 
-const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: any) => (
-  <motion.div whileHover={{ y: -10 }} onClick={() => onViewDetails(product)} className="group cursor-pointer bg-white dark:bg-slate-900 rounded-[3rem] p-4 transition-all hover:shadow-2xl border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 dark:bg-slate-800 aspect-[4/5] mb-6 shadow-inner">
-      <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
-      <div className="absolute inset-0 bg-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-      <button onClick={(e) => { e.stopPropagation(); if(!isAdding) addToCart(product, 1); }} className="absolute bottom-6 left-6 right-6 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest translate-y-20 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-xl flex items-center justify-center gap-3 z-20" style={{ color: BRAND_PURPLE }}>
-        {isAdding ? <Loader2 className="animate-spin" size={16} /> : <ShoppingBag size={16} />}
-        {isAdding ? "Adding..." : `Quick Add — $${product.price.toFixed(2)}`}
+const AboutPage = () => {
+  return (
+    <div className="pt-40 pb-32">
+       <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-32">
+             <h1 className="text-7xl md:text-9xl font-serif font-bold text-indigo-950 dark:text-white mb-8">Our Vision</h1>
+             <p className="text-2xl text-slate-500 dark:text-slate-400 font-light max-w-3xl mx-auto">Democratizing luxury radiance through botanical science and uncompromising ethical standards.</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-40">
+             <div className="p-12 bg-white dark:bg-slate-900 rounded-[4rem] border border-slate-50 dark:border-slate-800 space-y-8">
+                <Target size={40} className="text-purple-400" />
+                <h3 className="text-3xl font-serif font-bold dark:text-white">Our Mission</h3>
+                <p className="text-slate-500 leading-relaxed font-light">To bridge the gap between high-fashion aesthetics and clean botanical skincare, proving that elegance never requires compromise.</p>
+             </div>
+             <div className="p-12 bg-white dark:bg-slate-900 rounded-[4rem] border border-slate-50 dark:border-slate-800 space-y-8">
+                <Eye size={40} className="text-purple-400" />
+                <h3 className="text-3xl font-serif font-bold dark:text-white">Our Values</h3>
+                <p className="text-slate-500 leading-relaxed font-light">Transparency, Purity, and Empowerment. We believe in beauty that feels as good as it looks, backed by radical honesty.</p>
+             </div>
+             <div className="p-12 bg-white dark:bg-slate-900 rounded-[4rem] border border-slate-50 dark:border-slate-800 space-y-8">
+                <HeartHandshake size={40} className="text-purple-400" />
+                <h3 className="text-3xl font-serif font-bold dark:text-white">Our Impact</h3>
+                <p className="text-slate-500 leading-relaxed font-light">100% Carbon Neutral shipping and 100% recyclable components. We aren't just here for your lips; we're here for the world.</p>
+             </div>
+          </div>
+
+          <div className="space-y-24">
+             <div className="text-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-purple-400 mb-4 block">The Hands Behind MayGloss</span>
+                <h2 className="text-5xl md:text-7xl font-serif font-bold dark:text-white">Our Foundational Team</h2>
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                {[
+                  { name: "Dr. Elara Vance", role: "Chief Botanical Chemist", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" },
+                  { name: "Marcus Thorne", role: "Creative Director", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400" },
+                  { name: "Sienna Bloom", role: "Sustainability Lead", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400" },
+                  { name: "Julian Rossi", role: "Global Concierge", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" }
+                ].map((member, i) => (
+                  <div key={i} className="group cursor-pointer">
+                     <div className="aspect-[3/4] rounded-[3rem] overflow-hidden mb-6 relative">
+                        <img src={member.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" alt={member.name} />
+                        <div className="absolute inset-0 bg-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                     </div>
+                     <h4 className="text-2xl font-serif font-bold dark:text-white">{member.name}</h4>
+                     <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">{member.role}</p>
+                  </div>
+                ))}
+             </div>
+          </div>
+       </div>
+    </div>
+  );
+};
+
+// --- Our Story Page ---
+
+const StoryPage = () => {
+  return (
+    <div className="pt-40 pb-32">
+       <div className="max-w-5xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-16">
+             <div className="space-y-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 block">The MayGloss Genesis</span>
+                <h1 className="text-7xl md:text-9xl font-serif font-bold text-indigo-950 dark:text-white leading-tight">Born in a <br/>Botanical <br/>Observatory</h1>
+             </div>
+             
+             <p className="text-3xl font-serif italic text-indigo-900 dark:text-purple-200 leading-relaxed border-l-4 border-purple-200 pl-8">"I was tired of glosses that felt like plastic. I wanted something that felt like a secret whispered from a garden." — Dr. Elara Vance, Founder</p>
+
+             <div className="space-y-12 text-xl text-slate-500 dark:text-slate-400 font-light leading-loose">
+                <p>The MayGloss story began in 2021, not in a corporate high-rise, but in a damp, light-filled botanical conservatory in the heart of London. Our founder, Dr. Elara Vance, was a botanical chemist with a radical idea: lipgloss could—and should—be a therapeutic serum first, and a cosmetic second.</p>
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                   <img src="https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&q=80&w=800" className="rounded-[4rem] shadow-2xl" alt="Process" />
+                   <p>She spent eighteen months experimenting with cold-pressed seed oils, rejecting over 400 formulas until she hit upon the 'Luminous Bond'—a molecular structure that mimics the natural lipids of the lips while providing a non-sticky, mirror-like finish.</p>
+                </div>
+                <p>Today, MayGloss remains true to that initial discovery. We still manufacture in small batches to ensure formula stability. We still source our Vitis Vinifera directly from family-owned vineyards. And we still believe that every swipe of our gloss is a small, quiet act of self-care and botanical reverence.</p>
+             </div>
+
+             <div className="p-16 bg-stone-100 dark:bg-slate-900 rounded-[5rem] text-center space-y-10">
+                <h3 className="text-4xl font-serif font-bold dark:text-white">The Botanical Promise</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                   <div className="space-y-2">
+                      <span className="text-3xl font-bold text-purple-400">0%</span>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Synthetic Wax</p>
+                   </div>
+                   <div className="space-y-2">
+                      <span className="text-3xl font-bold text-purple-400">100%</span>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Vegan Formula</p>
+                   </div>
+                   <div className="space-y-2">
+                      <span className="text-3xl font-bold text-purple-400">400+</span>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tested Formulas</p>
+                   </div>
+                   <div className="space-y-2">
+                      <span className="text-3xl font-bold text-purple-400">∞</span>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pure Radiance</p>
+                   </div>
+                </div>
+             </div>
+          </motion.div>
+       </div>
+    </div>
+  );
+};
+
+// --- Missing Components Implementation ---
+
+// Fix: Implement ProductCard component
+const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: { product: Product, addToCart: (p: Product) => void, isAdding: boolean, onViewDetails: (p: Product) => void }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }} 
+    whileInView={{ opacity: 1, y: 0 }} 
+    viewport={{ once: true }}
+    className="group bg-white dark:bg-slate-900 rounded-[3rem] overflow-hidden border border-slate-50 dark:border-slate-800 hover:shadow-2xl transition-all duration-500"
+  >
+    <div className="aspect-square relative overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+      <div className="absolute top-6 left-6 flex flex-col gap-2">
+         {product.isBestSeller && <span className="bg-purple-400 text-white text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">Best Seller</span>}
+         <span className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md text-indigo-950 dark:text-purple-300 text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">{product.category}</span>
+      </div>
+      <button onClick={() => onViewDetails(product)} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+         <div className="bg-white dark:bg-slate-800 text-indigo-950 dark:text-white p-4 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-transform">
+            <Maximize2 size={24} />
+         </div>
       </button>
     </div>
-    <div className="px-4 pb-4 text-center">
-      <h3 className="text-xl font-bold text-indigo-950 dark:text-white mb-2 group-hover:text-purple-400 transition-colors">{product.name}</h3>
-      <div className="flex justify-between items-center max-w-[200px] mx-auto opacity-70">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{product.category}</span>
-        <span className="text-sm font-bold" style={{ color: BRAND_PURPLE }}>${product.price.toFixed(2)}</span>
+    <div className="p-8">
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white group-hover:text-purple-400 transition-colors">{product.name}</h3>
+        <span className="text-xl font-bold text-indigo-950 dark:text-purple-300">${product.price.toFixed(2)}</span>
       </div>
+      <p className="text-slate-400 text-sm font-light mb-8 line-clamp-2">{product.description}</p>
+      <button 
+        onClick={() => addToCart(product)}
+        disabled={isAdding}
+        className="w-full bg-indigo-950 text-white py-5 rounded-full font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-xl disabled:opacity-50"
+      >
+        {isAdding ? <Loader2 className="animate-spin" size={16} /> : <ShoppingBag size={16} />} 
+        {isAdding ? 'Adding...' : 'Add to Bag'}
+      </button>
     </div>
   </motion.div>
 );
 
-// --- ProductDetailPage ---
-
-const ProductDetailPage = ({ product, addToCart, addingId, onNavigate, onNotify }: any) => {
-  const [activeImg, setActiveImg] = useState(product.images[0]);
+// Fix: Implement ProductDetailPage component
+const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) => {
+  const [selectedImage, setSelectedImage] = useState(product.image);
   const [quantity, setQuantity] = useState(1);
-  const handleShare = async () => {
-    const shareData = { title: `MayGloss | ${product.name}`, text: product.description, url: window.location.href };
-    if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} }
-    else { try { await navigator.clipboard.writeText(window.location.href); onNotify("Link copied!"); } catch (err) {} }
-  };
+
   return (
-    <div className="pt-32 pb-32 px-6 max-w-7xl mx-auto relative">
-      <button onClick={() => onNavigate('products')} className="absolute top-24 left-6 p-4 bg-white dark:bg-slate-900 rounded-full shadow-2xl hover:scale-110 transition-transform z-10 group"><ArrowLeft size={24} /></button>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mt-12">
-        <div className="flex flex-col gap-6">
-          <div className="aspect-[4/5] rounded-[3.5rem] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-2xl border border-white dark:border-slate-800">
-            <motion.img key={activeImg} initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} src={activeImg} className="w-full h-full object-cover" />
+    <div className="pt-40 pb-32 px-6 max-w-7xl mx-auto">
+      <button onClick={() => onNavigate('products')} className="mb-12 flex items-center gap-2 text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors group uppercase text-[10px] font-black tracking-widest">
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Palette
+      </button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+        <div className="space-y-6">
+          <div className="aspect-square rounded-[4rem] overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 shadow-2xl">
+            <img src={selectedImage} className="w-full h-full object-cover" alt={product.name} />
           </div>
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {product.images.map((img: string, i: number) => (
-              <button key={i} onClick={() => setActiveImg(img)} className={`w-24 h-32 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${activeImg === img ? 'border-purple-400 scale-95 shadow-lg' : 'border-transparent opacity-60'}`} style={{ borderColor: activeImg === img ? BRAND_PURPLE : 'transparent' }}>
-                <img src={img} className="w-full h-full object-cover" />
+              <button key={i} onClick={() => setSelectedImage(img)} className={`w-24 h-24 rounded-3xl overflow-hidden border-4 transition-all shrink-0 ${selectedImage === img ? 'border-purple-400 scale-95' : 'border-transparent opacity-60'}`}>
+                <img src={img} className="w-full h-full object-cover" alt="" />
               </button>
             ))}
           </div>
         </div>
-        <div className="flex flex-col justify-center">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] block text-purple-400">Botanical Alchemy / {product.category}</span>
-            <button onClick={handleShare} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-full text-indigo-950 dark:text-white flex items-center gap-2 group"><Share2 size={18} /></button>
+
+        <div className="space-y-12">
+          <div>
+            <span className="text-purple-400 font-black uppercase tracking-[0.4em] text-[10px] mb-4 block">{product.category} Collection</span>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6">{product.name}</h1>
+            <p className="text-3xl font-bold text-indigo-950 dark:text-purple-300 mb-8">${product.price.toFixed(2)}</p>
+            <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed">{product.description}</p>
           </div>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6 leading-tight">{product.name}</h1>
-          <p className="text-3xl font-bold mb-8" style={{ color: BRAND_PURPLE }}>${product.price.toFixed(2)}</p>
-          <p className="text-lg text-slate-500 mb-10 italic">"{product.description}"</p>
-          <div className="space-y-8 mb-12">
-            <div className="flex items-center gap-8">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-950">Quantity</span>
-              <div className="flex items-center gap-6 bg-slate-100 dark:bg-slate-800 rounded-full px-8 py-4 shadow-inner">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={18} /></button>
-                <span className="font-bold text-xl w-8 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)}><Plus size={18} /></button>
-              </div>
+
+          <div className="grid grid-cols-2 gap-12 border-y border-slate-100 dark:border-slate-800 py-12">
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-950 dark:text-white">
+                <FlaskConical size={14} className="text-purple-400" /> Ingredients
+              </h4>
+              <ul className="space-y-2">
+                {product.ingredients.map((ing: string, i: number) => (
+                  <li key={i} className="text-sm text-slate-400 flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-purple-300" /> {ing}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <button onClick={() => addToCart(product, quantity)} className="w-full text-white py-6 rounded-full font-bold shadow-2xl transition-all text-xs tracking-[0.2em] uppercase flex items-center justify-center gap-4 hover:brightness-110 active:scale-95 disabled:opacity-50" style={{ backgroundColor: BRAND_PURPLE }} disabled={addingId === product.id}>
-              {addingId === product.id ? <Loader2 className="animate-spin" size={18} /> : <ShoppingBag size={18} />} Add to Bag
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-950 dark:text-white">
+                <Sparkles size={14} className="text-purple-400" /> Ritual
+              </h4>
+              <p className="text-sm text-slate-400 leading-relaxed italic">{product.ritual}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-6 pt-4">
+            <div className="flex items-center gap-6 bg-slate-50 dark:bg-slate-900 px-8 py-5 rounded-full border border-slate-100 dark:border-slate-800">
+              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-slate-400 hover:text-purple-400"><Minus size={18} /></button>
+              <span className="font-bold text-xl w-6 text-center text-indigo-950 dark:text-white">{quantity}</span>
+              <button onClick={() => setQuantity(q => q + 1)} className="text-slate-400 hover:text-purple-400"><Plus size={18} /></button>
+            </div>
+            <button 
+              onClick={() => addToCart(product, quantity)}
+              disabled={addingId === product.id}
+              className="flex-grow bg-indigo-950 text-white py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl disabled:opacity-50"
+            >
+              {addingId === product.id ? <Loader2 className="animate-spin" size={20} /> : <ShoppingBag size={20} />} 
+              {addingId === product.id ? 'Adding to Bag...' : 'Add to Shopping Bag'}
             </button>
           </div>
         </div>
@@ -527,47 +770,49 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate, onNotify 
   );
 };
 
-// --- Order Success Component ---
-
-const OrderSuccess = ({ method, orderId, total }: any) => {
-  return (
-    <div className="pt-48 pb-32 px-6 max-w-2xl mx-auto text-center">
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-24 h-24 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-10 text-green-500">
-        <CheckCircle2 size={48} />
-      </motion.div>
-      <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6">Radiance Secured</h1>
-      <p className="text-slate-500 mb-12 text-xl font-light">Order <span className="font-bold text-indigo-950 dark:text-white">#{orderId}</span> total: <span className="text-purple-500 font-bold">${total.toFixed(2)}</span></p>
+// Fix: Implement OrderSuccess component
+const OrderSuccess = ({ method, orderId }: { method: string, orderId: number }) => (
+  <div className="pt-40 pb-32 px-6 flex flex-col items-center justify-center min-h-[80vh]">
+    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center space-y-10 max-w-2xl">
+      <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto text-green-500 mb-8">
+         <CheckCircle2 size={48} />
+      </div>
+      <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white">Radiance Confirmed</h1>
+      <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed">Your order <span className="font-bold text-purple-500">#MG-{orderId}</span> has been received by our botanical lab. Prepare for your transformation.</p>
       
       {method === 'bank' && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] text-left mb-12 border border-slate-100 dark:border-slate-800 shadow-2xl">
-          <h3 className="font-bold text-xl mb-4 flex items-center gap-2"><Building2 size={24} style={{ color: BRAND_PURPLE }} /> Nigeria Bank Transfer Details</h3>
-          <p className="text-sm text-slate-500 mb-6">Please transfer your total to any of the accounts below. Once payment is made, send a receipt to our WhatsApp Concierge for instant activation.</p>
-          <div className="space-y-4">
-            {BANK_DETAILS_NG.map((bank, i) => (
-              <div key={i} className="p-4 border border-slate-50 dark:border-slate-800 rounded-2xl bg-stone-50 dark:bg-slate-800/50 flex justify-between items-center group">
-                <div>
-                  <p className="text-[10px] font-black uppercase text-purple-400 tracking-widest">{bank.bankName}</p>
-                  <p className="text-lg font-bold font-serif">{bank.accountNumber}</p>
-                  <p className="text-xs text-slate-500">{bank.accountName}</p>
-                </div>
-                <button onClick={() => { navigator.clipboard.writeText(bank.accountNumber); alert("Account number copied!"); }} className="p-3 rounded-full hover:bg-white dark:hover:bg-slate-700 transition-colors shadow-sm"><Copy size={16} /></button>
-              </div>
-            ))}
+        <div className="bg-stone-50 dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800 text-left space-y-6">
+          <div className="flex items-center gap-3 text-purple-400">
+             <Building2 size={24} />
+             <h3 className="font-black uppercase tracking-widest text-xs">Nigeria Bank Transfer Details</h3>
           </div>
-        </motion.div>
+          <div className="space-y-4">
+             {BANK_DETAILS_NG.map((bank, i) => (
+               <div key={i} className="flex justify-between items-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-700">
+                  <div>
+                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{bank.bankName}</p>
+                     <p className="font-bold text-indigo-950 dark:text-white">{bank.accountNumber}</p>
+                  </div>
+                  <button onClick={() => { navigator.clipboard.writeText(bank.accountNumber); alert("Account number copied!"); }} className="p-3 text-purple-400 hover:bg-purple-50 rounded-full transition-colors">
+                     <Copy size={16} />
+                  </button>
+               </div>
+             ))}
+          </div>
+        </div>
       )}
 
-      <div className="flex flex-col gap-4">
-        <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Hi MayGloss! My Order ID is #${orderId}. Payment of $${total.toFixed(2)} is pending. Here is my proof of payment.`)} className="bg-green-500 text-white py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-all">
-          <MessageCircle size={24} /> Confirm on WhatsApp
-        </button>
-        <button onClick={() => window.location.reload()} className="text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:text-indigo-950">Return to Homepage</button>
+      <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
+         <button onClick={() => window.location.href = '/'} className="px-12 py-5 bg-indigo-950 text-white rounded-full font-bold uppercase tracking-widest text-xs hover:scale-110 active:scale-95 transition-all shadow-2xl">Back to Gallery</button>
+         <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}`)} className="px-12 py-5 bg-white dark:bg-slate-900 text-indigo-950 dark:text-white border border-slate-200 dark:border-slate-800 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+            <MessageCircle size={16} /> Chat Concierge
+         </button>
       </div>
-    </div>
-  );
-};
+    </motion.div>
+  </div>
+);
 
-// --- Root Component ---
+// --- Main App Root ---
 
 const App = () => {
   const [currentPath, setCurrentPath] = useState('home');
@@ -580,6 +825,12 @@ const App = () => {
   const [orderMethod, setOrderMethod] = useState<'stripe' | 'bank' | 'whatsapp'>('stripe');
   const [orderId, setOrderId] = useState(0);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  // Fix: Chat state for persistence across renders
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [isChatRecording, setIsChatRecording] = useState(false);
 
   useEffect(() => {
     const dark = localStorage.getItem('maygloss_dark') === 'true';
@@ -631,7 +882,6 @@ const App = () => {
       return;
     }
 
-    // Simulate Payment Gateway Flow
     setTimeout(() => {
       setIsCheckingOut(false);
       navigateTo('success');
@@ -652,11 +902,13 @@ const App = () => {
     }
     switch (currentPath) {
       case 'home': return <HomePage onNavigate={navigateTo} addToCart={addToCart} addingId={addingToCartId} />;
+      case 'about': return <AboutPage />;
+      case 'story': return <StoryPage />;
       case 'products': return (
         <div className="pt-40 pb-32 px-6 max-w-7xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-20">
             <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6">The Palette</h1>
-            <p className="text-slate-500 font-light text-xl">Discover our complete collection of botanical high-shines.</p>
+            <p className="text-slate-500 dark:text-slate-400 font-light text-xl">Discover our complete collection of botanical high-shines.</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {filteredProducts.map(p => <ProductCard key={p.id} product={p} addToCart={addToCart} isAdding={addingToCartId === p.id} onViewDetails={(prod: any) => navigateTo(`product-${prod.id}`)} />)}
@@ -666,20 +918,30 @@ const App = () => {
       case 'consultant': return (
         <div className="pt-40 pb-32 px-6 max-w-5xl mx-auto h-[80vh] flex flex-col">
           <div className="mb-10 text-center">
-            <h1 className="text-5xl font-serif font-bold">Beauty Concierge</h1>
+            <h1 className="text-5xl font-serif font-bold dark:text-white">Beauty Concierge</h1>
             <p className="text-slate-400 mt-2 uppercase tracking-[0.3em] text-[10px] font-black">Personalized Shade Mastery</p>
           </div>
           <div className="flex-grow bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 p-8 overflow-hidden">
-             <ChatInterface messages={[]} setMessages={() => {}} loading={false} setLoading={() => {}} input="" setInput={() => {}} isRecording={false} setIsRecording={() => {}} />
+             {/* Fix: Use persistent chat state */}
+             <ChatInterface 
+               messages={chatMessages} 
+               setMessages={setChatMessages} 
+               loading={isChatLoading} 
+               setLoading={setIsChatLoading} 
+               input={chatInput} 
+               setInput={setChatInput} 
+               isRecording={isChatRecording} 
+               setIsRecording={setIsChatRecording} 
+             />
           </div>
         </div>
       );
       case 'cart': return (
         <div className="pt-40 pb-32 px-6 max-w-6xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-16 text-center">Shopping Bag</h1>
+          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-16 text-center dark:text-white">Shopping Bag</h1>
           {cart.length === 0 ? (
-            <div className="text-center py-24 bg-white dark:bg-slate-900 rounded-[4rem] shadow-sm border border-slate-50">
-              <ShoppingBag className="mx-auto mb-8 text-slate-100" size={100} />
+            <div className="text-center py-24 bg-white dark:bg-slate-900 rounded-[4rem] shadow-sm border border-slate-50 dark:border-slate-800">
+              <ShoppingBag className="mx-auto mb-8 text-slate-100 dark:text-slate-800" size={100} />
               <p className="text-slate-400 text-2xl font-light mb-10">Echoes of silence fill your bag...</p>
               <button onClick={() => navigateTo('products')} className="px-12 py-5 bg-indigo-950 text-white rounded-full font-bold uppercase tracking-widest text-xs hover:scale-110 transition-transform shadow-2xl">Start Your Collection</button>
             </div>
@@ -695,7 +957,7 @@ const App = () => {
                       <div className="flex items-center gap-4 mt-3">
                          <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-700">
                             <button onClick={() => { if(item.quantity > 1) setCart(prev => prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity - 1 } : i)); }} className="text-slate-400 hover:text-purple-400"><Minus size={14} /></button>
-                            <span className="font-bold text-sm w-4 text-center">{item.quantity}</span>
+                            <span className="font-bold text-sm w-4 text-center dark:text-white">{item.quantity}</span>
                             <button onClick={() => setCart(prev => prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i))} className="text-slate-400 hover:text-purple-400"><Plus size={14} /></button>
                          </div>
                          <p className="text-indigo-950 dark:text-purple-400 font-bold text-xl">${(item.price * item.quantity).toFixed(2)}</p>
@@ -705,16 +967,11 @@ const App = () => {
                   </div>
                 ))}
               </div>
-
               <div className="bg-indigo-950 text-white p-12 rounded-[4rem] shadow-2xl space-y-10 sticky top-32">
                 <div className="space-y-4">
                   <div className="flex justify-between text-slate-400 text-sm font-bold uppercase tracking-widest">
                     <span>Subtotal</span>
                     <span>${cart.reduce((s, i) => s + (i.price * i.quantity), 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-400 text-sm font-bold uppercase tracking-widest">
-                    <span>Shipping</span>
-                    <span className="text-green-400">Complimentary</span>
                   </div>
                   <div className="h-px bg-white/10 my-6" />
                   <div className="flex justify-between items-center">
@@ -722,49 +979,29 @@ const App = () => {
                     <span className="text-4xl font-bold font-serif">${cart.reduce((s, i) => s + (i.price * i.quantity), 0).toFixed(2)}</span>
                   </div>
                 </div>
-
                 <div className="flex flex-col gap-4">
-                  <button 
-                    onClick={() => handleCheckout('stripe')}
-                    disabled={isCheckingOut}
-                    className="w-full bg-white text-indigo-950 py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-                  >
-                    {isCheckingOut && orderMethod === 'stripe' ? <Loader2 className="animate-spin" size={20} /> : <CreditCard size={20} />}
-                    Proceed via Stripe
+                  <button onClick={() => handleCheckout('stripe')} disabled={isCheckingOut} className="w-full bg-white text-indigo-950 py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50">
+                    {isCheckingOut && orderMethod === 'stripe' ? <Loader2 className="animate-spin" size={20} /> : <CreditCard size={20} />} Proceed via Stripe
                   </button>
-                  
-                  <button 
-                    onClick={() => handleCheckout('bank')}
-                    disabled={isCheckingOut}
-                    className="w-full bg-purple-500 text-white py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-                  >
-                    {isCheckingOut && orderMethod === 'bank' ? <Loader2 className="animate-spin" size={20} /> : <Building2 size={20} />}
-                    Bank Transfer (Nigeria)
+                  <button onClick={() => handleCheckout('bank')} disabled={isCheckingOut} className="w-full bg-purple-500 text-white py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50">
+                    {isCheckingOut && orderMethod === 'bank' ? <Loader2 className="animate-spin" size={20} /> : <Building2 size={20} />} Bank Transfer (Nigeria)
                   </button>
-
-                  <button 
-                    onClick={() => handleCheckout('whatsapp')}
-                    className="w-full bg-green-500 text-white py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all"
-                  >
+                  <button onClick={() => handleCheckout('whatsapp')} className="w-full bg-green-500 text-white py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all">
                     <MessageCircle size={20} /> Order via WhatsApp
                   </button>
                 </div>
-                
-                <p className="text-[9px] text-center text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
-                  <Lock size={10} /> Secure SSL Encrypted Gateway
-                </p>
               </div>
             </div>
           )}
         </div>
       );
-      case 'success': return <OrderSuccess method={orderMethod} orderId={orderId} total={0} />;
+      case 'success': return <OrderSuccess method={orderMethod} orderId={orderId} />;
       default: return <HomePage onNavigate={navigateTo} addToCart={addToCart} addingId={addingToCartId} />;
     }
   };
 
   return (
-    <div className="min-h-screen selection:bg-purple-200">
+    <div className="min-h-screen selection:bg-purple-200 bg-white dark:bg-slate-950 transition-colors">
       <Navbar cartCount={cart.reduce((s, i) => s + i.quantity, 0)} onNavigate={navigateTo} currentPath={currentPath} darkMode={darkMode} toggleDarkMode={toggleDarkMode} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <main className="min-h-screen">
         <AnimatePresence mode="wait">
@@ -785,9 +1022,17 @@ const App = () => {
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 text-purple-400">The Collection</h3>
             <ul className="space-y-4 text-sm text-slate-500">
-              <li onClick={() => navigateTo('home')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer">Home</li>
-              <li onClick={() => navigateTo('products')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer">The Palette</li>
-              <li onClick={() => navigateTo('lookbook')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer">Lookbook</li>
+              <li onClick={() => navigateTo('home')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Home</li>
+              <li onClick={() => navigateTo('products')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">The Palette</li>
+              <li onClick={() => navigateTo('lookbook')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Lookbook</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 text-purple-400">Company</h3>
+            <ul className="space-y-4 text-sm text-slate-500">
+              <li onClick={() => navigateTo('about')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">About Us</li>
+              <li onClick={() => navigateTo('story')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Our Story</li>
+              <li className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Foundational Team</li>
             </ul>
           </div>
           <div>
@@ -796,13 +1041,6 @@ const App = () => {
               <li>Help FAQ</li>
               <li>Shipping Ritual</li>
               <li>Radiance Returns</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 text-purple-400">Legals</h3>
-            <ul className="space-y-4 text-sm text-slate-500">
-              <li>Privacy Promise</li>
-              <li>Terms of Ritual</li>
             </ul>
           </div>
         </div>
