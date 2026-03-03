@@ -218,9 +218,9 @@ const ChatInterface = ({ messages, setMessages, loading, setLoading, input, setI
     setLoading(true);
     try {
       // Fix: Follow guidelines for initialization and usage
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3.1-pro-preview',
         contents: [...messages, userMsg].map(m => ({ 
           role: m.role, 
           parts: [{ text: m.parts }] 
@@ -289,147 +289,303 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode, 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
 
-  const handleNav = (path: string) => {
+  const handleNav = (path: string, category: string = 'All') => {
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
     setIsMobileShopOpen(false);
-    onNavigate(path);
+    onNavigate(path, category);
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[120] bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-purple-50 dark:border-slate-900 h-20">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 shrink-0">
-          <button 
-            onClick={() => setIsMenuOpen(true)} 
-            className="lg:hidden p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-950 dark:text-white transition-colors"
-          >
-            <Menu size={24} />
-          </button>
-          <div onClick={() => handleNav('home')} className="flex items-center gap-2 cursor-pointer group">
-             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-serif font-bold text-xl transition-transform group-hover:rotate-12" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
-             <h1 className="hidden sm:block text-2xl font-serif font-bold text-indigo-950 dark:text-purple-300">MayGloss</h1>
-          </div>
-        </div>
-
-        <div className="flex-grow flex items-center justify-center gap-10">
-          <div className="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
-            <button onClick={() => handleNav('home')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'home' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'home' ? BRAND_PURPLE : 'transparent' }}>Home</button>
-            <div 
-              className="relative h-20 flex items-center cursor-pointer group"
-              onMouseEnter={() => setIsDropdownOpen(true)}
-              onMouseLeave={() => setIsDropdownOpen(false)}
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-[120] bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-purple-50 dark:border-slate-900 h-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 shrink-0">
+            <button 
+              onClick={() => setIsMenuOpen(true)} 
+              className="lg:hidden p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-950 dark:text-white transition-colors"
             >
-              <button className={`flex items-center gap-1 hover:text-indigo-950 ${currentPath === 'products' ? 'text-indigo-950' : ''}`}>
-                Shop <ChevronDown size={14} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              <div className="absolute top-full left-0 w-full h-4" />
-              <AnimatePresence>
-                {isDropdownOpen && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-full -left-10 w-64 pt-2">
-                    <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl rounded-[2rem] border border-slate-100 dark:border-slate-800 p-6">
-                      <div className="flex flex-col gap-1">
-                        {['Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
-                          <button key={c} onClick={() => handleNav('products')} className="w-full text-left p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl text-[10px] uppercase font-bold tracking-widest transition-colors flex items-center justify-between group/item">
-                            {c} Collection <ChevronRight size={12} className="opacity-0 group-hover/item:opacity-100 transition-all" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <Menu size={24} />
+            </button>
+            <div onClick={() => handleNav('home')} className="flex items-center gap-2 cursor-pointer group">
+               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-serif font-bold text-xl transition-transform group-hover:rotate-12" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
+               <h1 className="hidden sm:block text-2xl font-serif font-bold text-indigo-950 dark:text-purple-300">MayGloss</h1>
             </div>
-            <button onClick={() => handleNav('story')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'story' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'story' ? BRAND_PURPLE : 'transparent' }}>Story</button>
-            <button onClick={() => handleNav('about')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'about' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'about' ? BRAND_PURPLE : 'transparent' }}>About</button>
-            <button onClick={() => handleNav('consultant')} className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-full hover:scale-105 transition-all"><Sparkle size={14} /> AI Expert</button>
           </div>
 
-          <div className="hidden md:flex flex-grow max-w-sm relative group ml-4">
-             <input type="text" placeholder="Find your radiance..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => { if(currentPath !== 'products') onNavigate('products'); }} className="w-full bg-slate-100/50 dark:bg-slate-900/50 border border-transparent focus:border-purple-200 dark:focus:border-purple-900/50 rounded-full py-2.5 pl-5 pr-12 text-xs outline-none focus:ring-4 ring-purple-100 dark:ring-purple-900/10 transition-all dark:text-white" />
-             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors" size={16} />
+          <div className="flex-grow flex items-center justify-center gap-10">
+            <div className="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+              <button onClick={() => handleNav('home')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'home' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'home' ? BRAND_PURPLE : 'transparent' }}>Home</button>
+              <div 
+                className="relative h-20 flex items-center cursor-pointer group"
+                onMouseEnter={() => setIsDropdownOpen(true)}
+                onMouseLeave={() => setIsDropdownOpen(false)}
+              >
+                <button className={`flex items-center gap-1 hover:text-indigo-950 ${currentPath === 'products' ? 'text-indigo-950' : ''}`}>
+                  Shop <ChevronDown size={14} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <div className="absolute top-full left-0 w-full h-4" />
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-full -left-10 w-64 pt-2">
+                      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl rounded-[2rem] border border-slate-100 dark:border-slate-800 p-6">
+                        <div className="flex flex-col gap-1">
+                          {['Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
+                            <button key={c} onClick={() => handleNav('products', c)} className="w-full text-left p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl text-[10px] uppercase font-bold tracking-widest transition-colors flex items-center justify-between group/item">
+                              {c} Collection <ChevronRight size={12} className="opacity-0 group-hover/item:opacity-100 transition-all" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <button onClick={() => handleNav('story')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'story' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'story' ? BRAND_PURPLE : 'transparent' }}>Story</button>
+              <button onClick={() => handleNav('about')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'about' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'about' ? BRAND_PURPLE : 'transparent' }}>About</button>
+              <button onClick={() => handleNav('consultant')} className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-full hover:scale-105 transition-all"><Sparkle size={14} /> AI Expert</button>
+            </div>
+
+            <div className="hidden md:flex flex-grow max-w-sm relative group ml-4">
+               <input type="text" placeholder="Find your radiance..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => { if(currentPath !== 'products') onNavigate('products'); }} className="w-full bg-slate-100/50 dark:bg-slate-900/50 border border-transparent focus:border-purple-200 dark:focus:border-purple-900/50 rounded-full py-2.5 pl-5 pr-12 text-xs outline-none focus:ring-4 ring-purple-100 dark:ring-purple-900/10 transition-all dark:text-white" />
+               <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors" size={16} />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
+            <button onClick={toggleDarkMode} className="p-2.5 text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors">
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button onClick={() => handleNav('cart')} className="relative p-2.5 bg-indigo-950 text-white rounded-full hover:scale-110 active:scale-95 transition-all shadow-xl">
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-purple-400 text-white text-[9px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white dark:border-slate-950 shadow-lg">{cartCount}</span>
+              )}
+            </button>
           </div>
         </div>
+      </nav>
 
-        <div className="flex items-center gap-2 md:gap-4 shrink-0">
-          <button onClick={toggleDarkMode} className="p-2.5 text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors">
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <button onClick={() => handleNav('cart')} className="relative p-2.5 bg-indigo-950 text-white rounded-full hover:scale-110 active:scale-95 transition-all shadow-xl">
-            <ShoppingBag size={20} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-purple-400 text-white text-[9px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white dark:border-slate-950 shadow-lg">{cartCount}</span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Sidebar - 100% Height */}
+      {/* Mobile Sidebar - Full Screen */}
       <AnimatePresence>
         {isMenuOpen && (
-          <div className="fixed inset-0 z-[200] lg:hidden">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMenuOpen(false)} className="absolute inset-0 bg-indigo-950/40 backdrop-blur-md" />
+          <div className="fixed inset-0 z-[500] lg:hidden">
             <motion.div 
-              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute top-0 left-0 bottom-0 h-full w-full max-w-sm bg-white dark:bg-slate-950 shadow-2xl flex flex-col overflow-hidden"
+              key="mobile-menu-backdrop"
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setIsMenuOpen(false)} 
+              className="absolute inset-0 bg-indigo-950/95 backdrop-blur-2xl" 
+            />
+            <motion.div 
+              key="mobile-menu-content"
+              initial={{ x: '100%' }} 
+              animate={{ x: 0 }} 
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+              className="absolute top-0 right-0 bottom-0 h-full w-full bg-white dark:bg-slate-950 shadow-2xl flex flex-col overflow-hidden"
             >
-              <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+              <div className="p-8 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-serif font-bold text-xl" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
                   <span className="font-serif font-bold text-2xl text-indigo-950 dark:text-white">MayGloss</span>
                 </div>
-                <button onClick={() => setIsMenuOpen(false)} className="p-3 rounded-full bg-slate-100 dark:bg-slate-900 hover:scale-110 transition-transform">
-                  <X size={28} className="text-slate-500" />
+                <button 
+                  onClick={() => setIsMenuOpen(false)} 
+                  className="group p-3 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-indigo-950 dark:hover:bg-white transition-all duration-300"
+                >
+                  <X size={32} className="text-slate-500 group-hover:text-white dark:group-hover:text-indigo-950 transition-colors" />
                 </button>
               </div>
 
-              <div className="flex-grow p-10 flex flex-col gap-10 overflow-y-auto">
+              <div className="flex-grow p-10 flex flex-col justify-center gap-12 overflow-y-auto">
                 <div className="flex flex-col gap-8">
-                  <button onClick={() => handleNav('home')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">Home</button>
-                  <div className="space-y-6">
-                    <button onClick={() => setIsMobileShopOpen(!isMobileShopOpen)} className="text-5xl font-serif font-bold text-left flex items-center justify-between w-full hover:text-purple-400 transition-colors dark:text-white">
-                      Shop <ChevronDown size={32} className={`transition-transform ${isMobileShopOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    <AnimatePresence>
-                      {isMobileShopOpen && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col gap-6 pl-6 border-l-4 border-purple-200 dark:border-purple-900/50 overflow-hidden">
-                          {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
-                            <button key={c} onClick={() => handleNav('products')} className="text-left text-2xl font-bold uppercase tracking-[0.1em] text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors">{c} Collection</button>
-                          ))}
-                        </motion.div>
+                  {[
+                    { name: 'Home', path: 'home', type: 'link' },
+                    { name: 'Shop', path: 'products', type: 'dropdown' },
+                    { name: 'Our Story', path: 'story', type: 'link' },
+                    { name: 'About Us', path: 'about', type: 'link' },
+                    { name: 'Lookbook', path: 'lookbook', type: 'link' },
+                    { name: 'AI Expert', path: 'consultant', type: 'ai' },
+                  ].map((item, idx) => (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + idx * 0.05 }}
+                    >
+                      {item.type === 'dropdown' ? (
+                        <div className="space-y-6">
+                          <button 
+                            onClick={() => setIsMobileShopOpen(!isMobileShopOpen)} 
+                            className="text-5xl md:text-6xl font-serif font-bold text-left flex items-center justify-between w-full hover:text-purple-400 transition-colors dark:text-white"
+                          >
+                            {item.name} 
+                            <ChevronDown size={32} className={`transition-transform duration-500 ${isMobileShopOpen ? 'rotate-180' : ''}`} />
+                          </button>
+                          <AnimatePresence>
+                            {isMobileShopOpen && (
+                              <motion.div 
+                                initial={{ height: 0, opacity: 0 }} 
+                                animate={{ height: 'auto', opacity: 1 }} 
+                                exit={{ height: 0, opacity: 0 }} 
+                                className="flex flex-col gap-6 pl-6 border-l-4 border-purple-200 dark:border-purple-900/50 overflow-hidden"
+                              >
+                                {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
+                                  <button 
+                                    key={c} 
+                                    onClick={() => handleNav('products', c)} 
+                                    className="text-left text-2xl font-bold uppercase tracking-[0.1em] text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors"
+                                  >
+                                    {c} Collection
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => handleNav(item.path)} 
+                          className={`text-5xl md:text-6xl font-serif font-bold text-left w-full transition-colors ${item.type === 'ai' ? 'text-purple-400 flex items-center gap-4' : 'hover:text-purple-400 dark:text-white'}`}
+                        >
+                          {item.name} {item.type === 'ai' && <Sparkle size={32} />}
+                        </button>
                       )}
-                    </AnimatePresence>
-                  </div>
-                  <button onClick={() => handleNav('story')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">Our Story</button>
-                  <button onClick={() => handleNav('about')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">About Us</button>
-                  <button onClick={() => handleNav('lookbook')} className="text-5xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white">Lookbook</button>
-                  <button onClick={() => handleNav('consultant')} className="text-5xl font-serif font-bold text-purple-400 text-left flex items-center gap-4 transition-transform hover:translate-x-2">AI Expert <Sparkle size={32} /></button>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
 
-              <div className="p-10 bg-stone-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-6">
-                 <div className="flex gap-8">
-                    <Instagram size={28} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
-                    <Twitter size={28} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
-                    <Facebook size={28} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
+              <div className="p-10 bg-stone-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-8">
+                 <div className="flex gap-8 justify-center">
+                    {[Instagram, Twitter, Facebook].map((Icon, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 + i * 0.1 }}
+                      >
+                        <Icon size={32} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
+                      </motion.div>
+                    ))}
                  </div>
-                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Global Radiance v2.1</p>
+                 <div className="flex items-center justify-between">
+                   <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Global Radiance v2.2</p>
+                   <div className="flex items-center gap-2 text-xs text-slate-300 font-bold uppercase tracking-widest">
+                     <Globe size={14} /> EN-US
+                   </div>
+                 </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
+  );
+};
+
+// --- Shine Quiz Component ---
+
+const ShineQuiz = ({ onClose, onNavigate }: { onClose: () => void, onNavigate: (path: string, category?: string) => void }) => {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+
+  const questions = [
+    {
+      question: "What's your ideal lip finish?",
+      options: [
+        { label: "High-wattage mirror shine", value: "Shine" },
+        { label: "Velvety, weightless matte", value: "Matte" },
+        { label: "Natural, hydrated glow", value: "Tint" },
+        { label: "Plumped and voluminous", value: "Plumper" }
+      ]
+    },
+    {
+      question: "How do you want your lips to feel?",
+      options: [
+        { label: "Cushiony and drenched in oil", value: "Tint" },
+        { label: "Cool and tingly", value: "Plumper" },
+        { label: "Lightweight and barely-there", value: "Matte" },
+        { label: "Rich and glossy", value: "Shine" }
+      ]
+    },
+    {
+      question: "What's your daily ritual style?",
+      options: [
+        { label: "Minimalist and effortless", value: "Tint" },
+        { label: "Bold and sophisticated", value: "Matte" },
+        { label: "Glamorous and radiant", value: "Shine" },
+        { label: "Fresh and energetic", value: "Plumper" }
+      ]
+    }
+  ];
+
+  const handleAnswer = (value: string) => {
+    const newAnswers = [...answers, value];
+    if (step < questions.length - 1) {
+      setAnswers(newAnswers);
+      setStep(step + 1);
+    } else {
+      // Calculate result based on most frequent answer
+      const counts: any = {};
+      newAnswers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+      const result = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+      onNavigate('products', result);
+      onClose();
+    }
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-indigo-950/90 backdrop-blur-xl"
+    >
+      <motion.div 
+        initial={{ scale: 0.9, y: 20 }} 
+        animate={{ scale: 1, y: 0 }} 
+        className="bg-white dark:bg-slate-950 w-full max-w-2xl rounded-[4rem] overflow-hidden shadow-2xl relative p-12 md:p-20"
+      >
+        <button onClick={onClose} className="absolute top-10 right-10 p-3 rounded-full bg-slate-100 dark:bg-slate-900 hover:scale-110 transition-transform">
+          <X size={24} className="text-slate-500" />
+        </button>
+
+        <div className="space-y-12">
+          <div className="space-y-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 block">Step {step + 1} of {questions.length}</span>
+            <h2 className="text-4xl md:text-6xl font-serif font-bold text-indigo-950 dark:text-white leading-tight">{questions[step].question}</h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {questions[step].options.map((option, i) => (
+              <button 
+                key={i} 
+                onClick={() => handleAnswer(option.value)}
+                className="w-full text-left p-6 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-all group"
+              >
+                <span className="text-lg font-bold text-slate-600 dark:text-slate-400 group-hover:text-indigo-950 dark:group-hover:text-white transition-colors">{option.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
 // --- HomePage ---
 
 const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
+  const [showQuiz, setShowQuiz] = useState(false);
   const bestSellers = PRODUCTS.slice(0, 3);
   return (
     <div className="flex flex-col">
+      <AnimatePresence>
+        {showQuiz && <ShineQuiz onClose={() => setShowQuiz(false)} onNavigate={onNavigate} />}
+      </AnimatePresence>
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-20">
         <div className="absolute inset-0 z-0">
@@ -528,6 +684,50 @@ const HomePage = ({ onNavigate, addToCart, addingId }: any) => {
               <h3 className="text-2xl font-serif font-bold dark:text-white">Precision Tint</h3>
               <p className="text-slate-400 font-light leading-relaxed">Micro-encapsulated pigments react to your lip's natural pH, delivering a custom radiance that is uniquely yours.</p>
            </div>
+        </div>
+      </section>
+
+      {/* Shine Signature CTA */}
+      <section className="py-32 bg-white dark:bg-slate-950 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-purple-50 dark:bg-purple-900/10 rounded-[5rem] p-12 md:p-24 flex flex-col lg:flex-row items-center gap-20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200/30 dark:bg-purple-800/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            
+            <div className="flex-1 space-y-10 relative z-10">
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 block">Personalized Radiance</span>
+              <h2 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white leading-tight">Find Your <br/>Shine Signature</h2>
+              <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed">Not sure which finish matches your ritual? Take our botanical intelligence quiz to discover your perfect lip gloss match.</p>
+              <button 
+                onClick={() => setShowQuiz(true)}
+                className="px-12 py-6 bg-indigo-950 text-white rounded-full font-bold text-xs uppercase tracking-widest shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center gap-3"
+              >
+                Start The Quiz <ChevronRight size={16} />
+              </button>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-6 pt-12">
+                  <div className="aspect-[3/4] rounded-[3rem] overflow-hidden shadow-xl">
+                    <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" alt="Matte" />
+                  </div>
+                  <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-purple-400">The Velvet</span>
+                    <p className="text-sm font-bold text-indigo-950 dark:text-white mt-1">Matte Mastery</p>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-purple-400">The Mirror</span>
+                    <p className="text-sm font-bold text-indigo-950 dark:text-white mt-1">High-Shine Lab</p>
+                  </div>
+                  <div className="aspect-[3/4] rounded-[3rem] overflow-hidden shadow-xl">
+                    <img src="https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" alt="Shine" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -657,7 +857,7 @@ const StoryPage = () => {
 // --- Missing Components Implementation ---
 
 // Fix: Implement ProductCard component
-const ProductCard = ({ product, addToCart, isAdding, onViewDetails }: { product: Product, addToCart: (p: Product) => void, isAdding: boolean, onViewDetails: (p: Product) => void }) => (
+const ProductCard: React.FC<{ product: Product, addToCart: (p: Product, q?: number) => void, isAdding: boolean, onViewDetails: (p: Product) => void }> = ({ product, addToCart, isAdding, onViewDetails }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }} 
     whileInView={{ opacity: 1, y: 0 }} 
@@ -812,6 +1012,121 @@ const OrderSuccess = ({ method, orderId }: { method: string, orderId: number }) 
   </div>
 );
 
+// --- Lookbook Page ---
+
+const LookbookPage = () => {
+  const lookbookImages = [
+    { url: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800', title: 'Morning Dew', description: 'Amethyst Glow on bare lips.' },
+    { url: 'https://images.unsplash.com/photo-1596462502278-27bf87f6f164?auto=format&fit=crop&q=80&w=800', title: 'Velvet Dusk', description: 'Dusty Rose Matte layered with Shine.' },
+    { url: 'https://images.unsplash.com/photo-1621607512022-6aecc4fed814?auto=format&fit=crop&q=80&w=800', title: 'Icy Reflection', description: 'The Plumper effect in direct sunlight.' },
+    { url: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?auto=format&fit=crop&q=80&w=800', title: 'Berry Nectar', description: 'Deep hydration with a hint of tint.' },
+    { url: 'https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&q=80&w=800', title: 'Botanical Lab', description: 'Where the magic happens.' },
+    { url: 'https://images.unsplash.com/photo-1601054704854-1a2e79dea4d3?auto=format&fit=crop&q=80&w=800', title: 'Pure Radiance', description: 'The MayGloss signature finish.' }
+  ];
+
+  return (
+    <div className="pt-40 pb-32">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-24">
+          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 mb-4 block">Visual Rituals</span>
+          <h1 className="text-7xl md:text-9xl font-serif font-bold text-indigo-950 dark:text-white mb-8">Lookbook</h1>
+          <p className="text-2xl text-slate-500 dark:text-slate-400 font-light max-w-3xl mx-auto">A curated gallery of radiance, captured in the wild and in our botanical observatory.</p>
+        </motion.div>
+
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+          {lookbookImages.map((item, i) => (
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              whileInView={{ opacity: 1, scale: 1 }} 
+              viewport={{ once: true }}
+              className="relative group rounded-[2rem] overflow-hidden break-inside-avoid shadow-xl"
+            >
+              <img src={item.url} alt={item.title} className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-indigo-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
+                <h3 className="text-2xl font-serif font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-200 font-light">{item.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Policy Pages ---
+
+const PolicyPage = ({ title, subtitle, content }: { title: string, subtitle: string, content: React.ReactNode }) => (
+  <div className="pt-40 pb-32">
+    <div className="max-w-4xl mx-auto px-6">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+        <div className="space-y-4">
+          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 block">{subtitle}</span>
+          <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white leading-tight">{title}</h1>
+        </div>
+        <div className="max-w-none text-slate-500 dark:text-slate-400 font-light leading-relaxed space-y-8">
+          {content}
+        </div>
+      </motion.div>
+    </div>
+  </div>
+);
+
+const PrivacyPolicy = () => (
+  <PolicyPage 
+    title="Privacy Policy" 
+    subtitle="Data Stewardship" 
+    content={
+      <>
+        <p>At MayGloss, your privacy is as important as your radiance. This policy outlines how we collect, use, and protect your personal information when you interact with our botanical lab and digital boutique.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Information Collection</h3>
+        <p>We collect information you provide directly to us, such as when you create an account, make a purchase, or subscribe to our newsletter. This may include your name, email address, shipping address, and payment information.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">How We Use Your Data</h3>
+        <p>Your data is used to process orders, provide customer support, and send you updates about new shades and botanical rituals. We never sell your personal information to third parties.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Security Measures</h3>
+        <p>We implement industry-standard security measures to protect your data. All transactions are encrypted, and access to personal information is strictly limited to authorized personnel.</p>
+      </>
+    }
+  />
+);
+
+const TermsAndConditions = () => (
+  <PolicyPage 
+    title="Terms & Conditions" 
+    subtitle="The MayGloss Agreement" 
+    content={
+      <>
+        <p>By accessing or using the MayGloss platform, you agree to be bound by these Terms and Conditions. Please read them carefully before engaging with our botanical collection.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Product Usage</h3>
+        <p>Our products are intended for personal use only. Resale of MayGloss products without explicit authorization is strictly prohibited.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Intellectual Property</h3>
+        <p>All content on this site, including text, graphics, logos, and images, is the property of MayGloss and is protected by international copyright laws.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Limitation of Liability</h3>
+        <p>MayGloss shall not be liable for any indirect, incidental, or consequential damages arising out of the use or inability to use our products or platform.</p>
+      </>
+    }
+  />
+);
+
+const SafetyPolicy = () => (
+  <PolicyPage 
+    title="Safety Policy" 
+    subtitle="Botanical Integrity" 
+    content={
+      <>
+        <p>Your safety is our priority. Every MayGloss formula undergoes rigorous testing to ensure it meets our high standards for purity and performance.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Ingredient Transparency</h3>
+        <p>We are committed to full ingredient transparency. All our glosses are 100% vegan, cruelty-free, and formulated without synthetic waxes or harmful parabens.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Allergy Information</h3>
+        <p>While our products are formulated with natural botanical oils, we recommend performing a patch test before full application, especially if you have known sensitivities to specific plant extracts.</p>
+        <h3 className="text-2xl font-serif font-bold text-indigo-950 dark:text-white">Lab Standards</h3>
+        <p>Our products are manufactured in small batches within controlled environments to maintain the highest levels of stability and hygiene.</p>
+      </>
+    }
+  />
+);
+
 // --- Main App Root ---
 
 const App = () => {
@@ -825,6 +1140,8 @@ const App = () => {
   const [orderMethod, setOrderMethod] = useState<'stripe' | 'bank' | 'whatsapp'>('stripe');
   const [orderId, setOrderId] = useState(0);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const [currentCategory, setCurrentCategory] = useState('All');
 
   // Fix: Chat state for persistence across renders
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -851,8 +1168,9 @@ const App = () => {
     setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), 3000);
   };
 
-  const navigateTo = (path: string) => {
+  const navigateTo = (path: string, category: string = 'All') => {
     setIsNavigating(true);
+    setCurrentCategory(category);
     setTimeout(() => { setCurrentPath(path); setIsNavigating(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 300);
   };
 
@@ -890,8 +1208,12 @@ const App = () => {
   };
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [searchQuery]);
+    return PRODUCTS.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = currentCategory === 'All' || p.category === currentCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, currentCategory]);
 
   const renderContent = () => {
     if (isNavigating) return <div className="h-screen flex items-center justify-center"><LoadingSpinner text="Refining your glow..." /></div>;
@@ -904,14 +1226,29 @@ const App = () => {
       case 'home': return <HomePage onNavigate={navigateTo} addToCart={addToCart} addingId={addingToCartId} />;
       case 'about': return <AboutPage />;
       case 'story': return <StoryPage />;
+      case 'lookbook': return <LookbookPage />;
+      case 'privacy': return <PrivacyPolicy />;
+      case 'terms': return <TermsAndConditions />;
+      case 'safety': return <SafetyPolicy />;
       case 'products': return (
         <div className="pt-40 pb-32 px-6 max-w-7xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-20">
             <h1 className="text-5xl md:text-7xl font-serif font-bold text-indigo-950 dark:text-white mb-6">The Palette</h1>
-            <p className="text-slate-500 dark:text-slate-400 font-light text-xl">Discover our complete collection of botanical high-shines.</p>
+            <p className="text-slate-500 dark:text-slate-400 font-light text-xl mb-10">Discover our complete collection of botanical high-shines.</p>
+            <div className="flex flex-wrap justify-center gap-4">
+              {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
+                <button 
+                  key={c} 
+                  onClick={() => setCurrentCategory(c)}
+                  className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${currentCategory === c ? 'bg-indigo-950 text-white shadow-xl' : 'bg-slate-100 dark:bg-slate-900 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {filteredProducts.map(p => <ProductCard key={p.id} product={p} addToCart={addToCart} isAdding={addingToCartId === p.id} onViewDetails={(prod: any) => navigateTo(`product-${prod.id}`)} />)}
+            {filteredProducts.map(p => <ProductCard key={p.id} product={p} addToCart={addToCart} isAdding={addingToCartId === p.id} onViewDetails={(prod: Product) => navigateTo(`product-${prod.id}`)} />)}
           </div>
         </div>
       );
@@ -1038,9 +1375,9 @@ const App = () => {
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 text-purple-400">Concierge</h3>
             <ul className="space-y-4 text-sm text-slate-500">
-              <li>Help FAQ</li>
-              <li>Shipping Ritual</li>
-              <li>Radiance Returns</li>
+              <li onClick={() => navigateTo('privacy')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Privacy Policy</li>
+              <li onClick={() => navigateTo('terms')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Terms & Conditions</li>
+              <li onClick={() => navigateTo('safety')} className="hover:text-indigo-950 dark:hover:text-white cursor-pointer transition-colors">Safety Policy</li>
             </ul>
           </div>
         </div>
