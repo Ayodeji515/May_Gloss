@@ -315,14 +315,17 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode, 
 
           <div className="flex-grow flex items-center justify-center gap-10">
             <div className="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
-              <button onClick={() => handleNav('home')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'home' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'home' ? BRAND_PURPLE : 'transparent' }}>Home</button>
+              <button onClick={() => handleNav('home')} className={`hover:text-indigo-950 dark:hover:text-white transition-colors ${currentPath === 'home' ? 'text-indigo-950 dark:text-white border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'home' ? BRAND_PURPLE : 'transparent' }}>Home</button>
+              <button onClick={() => handleNav('products')} className={`hover:text-indigo-950 dark:hover:text-white transition-colors ${currentPath === 'products' ? 'text-indigo-950 dark:text-white border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'products' ? BRAND_PURPLE : 'transparent' }}>Products</button>
               <div 
                 className="relative h-20 flex items-center cursor-pointer group"
                 onMouseEnter={() => setIsDropdownOpen(true)}
                 onMouseLeave={() => setIsDropdownOpen(false)}
               >
-                <button className={`flex items-center gap-1 hover:text-indigo-950 ${currentPath === 'products' ? 'text-indigo-950' : ''}`}>
-                  Shop <ChevronDown size={14} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                <button 
+                  className={`flex items-center gap-1 hover:text-indigo-950 dark:hover:text-white ${currentPath === 'products' ? 'text-indigo-950 dark:text-white' : ''}`}
+                >
+                  Collections <ChevronDown size={14} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <div className="absolute top-full left-0 w-full h-4" />
                 <AnimatePresence>
@@ -341,8 +344,8 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode, 
                   )}
                 </AnimatePresence>
               </div>
-              <button onClick={() => handleNav('story')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'story' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'story' ? BRAND_PURPLE : 'transparent' }}>Story</button>
-              <button onClick={() => handleNav('about')} className={`hover:text-indigo-950 transition-colors ${currentPath === 'about' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'about' ? BRAND_PURPLE : 'transparent' }}>About</button>
+              <button onClick={() => handleNav('story')} className={`hover:text-indigo-950 dark:hover:text-white transition-colors ${currentPath === 'story' ? 'text-indigo-950 dark:text-white border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'story' ? BRAND_PURPLE : 'transparent' }}>Story</button>
+              <button onClick={() => handleNav('about')} className={`hover:text-indigo-950 dark:hover:text-white transition-colors ${currentPath === 'about' ? 'text-indigo-950 border-b-2' : ''}`} style={{ borderBottomColor: currentPath === 'about' ? BRAND_PURPLE : 'transparent' }}>About</button>
               <button onClick={() => handleNav('consultant')} className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-full hover:scale-105 transition-all"><Sparkle size={14} /> AI Expert</button>
             </div>
 
@@ -383,100 +386,74 @@ const Navbar = ({ cartCount, onNavigate, currentPath, darkMode, toggleDarkMode, 
               initial={{ x: '100%' }} 
               animate={{ x: 0 }} 
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-              className="absolute top-0 right-0 bottom-0 h-full w-full bg-white dark:bg-slate-950 shadow-2xl flex flex-col overflow-hidden"
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute top-0 right-0 h-full w-full bg-white dark:bg-slate-950 shadow-2xl flex flex-col overflow-hidden"
             >
-              <div className="p-8 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-serif font-bold text-xl" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
-                  <span className="font-serif font-bold text-2xl text-indigo-950 dark:text-white">MayGloss</span>
+              <div className="p-8 flex items-center justify-between border-b border-slate-100 dark:border-slate-900 bg-white/50 dark:bg-slate-950/50 backdrop-blur-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-serif font-bold text-2xl shadow-lg" style={{ backgroundColor: BRAND_PURPLE }}>MG</div>
+                  <div className="flex flex-col">
+                    <span className="font-serif font-bold text-2xl text-indigo-950 dark:text-white leading-none">MayGloss</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-400 mt-1">Menu</span>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setIsMenuOpen(false)} 
-                  className="group p-3 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-indigo-950 dark:hover:bg-white transition-all duration-300"
+                  className="p-4 rounded-full bg-indigo-950 text-white hover:bg-purple-600 transition-all duration-300 shadow-xl active:scale-95 flex items-center justify-center"
                 >
-                  <X size={32} className="text-slate-500 group-hover:text-white dark:group-hover:text-indigo-950 transition-colors" />
+                  <X size={24} />
                 </button>
               </div>
 
-              <div className="flex-grow p-10 flex flex-col justify-center gap-12 overflow-y-auto">
-                <div className="flex flex-col gap-8">
+              <div className="flex-grow p-10 flex flex-col justify-center gap-12 overflow-y-auto relative">
+                {/* Decorative background element */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
+                  <div className="w-full h-full border-[100px] border-purple-500 rounded-full blur-[120px]" />
+                </div>
+                <div className="flex flex-col gap-8 relative z-10">
                   {[
-                    { name: 'Home', path: 'home', type: 'link' },
-                    { name: 'Shop', path: 'products', type: 'dropdown' },
-                    { name: 'Our Story', path: 'story', type: 'link' },
-                    { name: 'About Us', path: 'about', type: 'link' },
-                    { name: 'Lookbook', path: 'lookbook', type: 'link' },
-                    { name: 'AI Expert', path: 'consultant', type: 'ai' },
+                    { name: 'Home', path: 'home' },
+                    { name: 'Products', path: 'products' },
+                    { name: 'Our Story', path: 'story' },
+                    { name: 'About Us', path: 'about' },
+                    { name: 'Lookbook', path: 'lookbook' },
+                    { name: 'AI Expert', path: 'consultant' },
                   ].map((item, idx) => (
                     <motion.div
                       key={item.name}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 + idx * 0.05 }}
                     >
-                      {item.type === 'dropdown' ? (
-                        <div className="space-y-6">
-                          <button 
-                            onClick={() => setIsMobileShopOpen(!isMobileShopOpen)} 
-                            className="text-5xl md:text-6xl font-serif font-bold text-left flex items-center justify-between w-full hover:text-purple-400 transition-colors dark:text-white"
-                          >
-                            {item.name} 
-                            <ChevronDown size={32} className={`transition-transform duration-500 ${isMobileShopOpen ? 'rotate-180' : ''}`} />
-                          </button>
-                          <AnimatePresence>
-                            {isMobileShopOpen && (
-                              <motion.div 
-                                initial={{ height: 0, opacity: 0 }} 
-                                animate={{ height: 'auto', opacity: 1 }} 
-                                exit={{ height: 0, opacity: 0 }} 
-                                className="flex flex-col gap-6 pl-6 border-l-4 border-purple-200 dark:border-purple-900/50 overflow-hidden"
-                              >
-                                {['All', 'Shine', 'Matte', 'Plumper', 'Tint'].map(c => (
-                                  <button 
-                                    key={c} 
-                                    onClick={() => handleNav('products', c)} 
-                                    className="text-left text-2xl font-bold uppercase tracking-[0.1em] text-slate-400 hover:text-indigo-950 dark:hover:text-white transition-colors"
-                                  >
-                                    {c} Collection
-                                  </button>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={() => handleNav(item.path)} 
-                          className={`text-5xl md:text-6xl font-serif font-bold text-left w-full transition-colors ${item.type === 'ai' ? 'text-purple-400 flex items-center gap-4' : 'hover:text-purple-400 dark:text-white'}`}
-                        >
-                          {item.name} {item.type === 'ai' && <Sparkle size={32} />}
-                        </button>
-                      )}
+                      <button 
+                        onClick={() => handleNav(item.path)} 
+                        className={`text-5xl md:text-7xl font-serif font-bold text-left hover:text-purple-400 transition-colors dark:text-white ${currentPath === item.path ? 'text-purple-400' : ''}`}
+                      >
+                        {item.name}
+                      </button>
                     </motion.div>
                   ))}
                 </div>
               </div>
 
-              <div className="p-10 bg-stone-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-8">
-                 <div className="flex gap-8 justify-center">
-                    {[Instagram, Twitter, Facebook].map((Icon, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.5 + i * 0.1 }}
-                      >
-                        <Icon size={32} className="text-slate-400 hover:text-purple-400 cursor-pointer transition-colors" />
-                      </motion.div>
-                    ))}
-                 </div>
-                 <div className="flex items-center justify-between">
-                   <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Global Radiance v2.2</p>
-                   <div className="flex items-center gap-2 text-xs text-slate-300 font-bold uppercase tracking-widest">
-                     <Globe size={14} /> EN-US
-                   </div>
-                 </div>
+              <div className="p-10 border-t border-slate-100 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <button onClick={toggleDarkMode} className="p-4 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400">
+                      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    </button>
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{darkMode ? 'Light' : 'Dark'} Mode</span>
+                  </div>
+                  <button onClick={() => handleNav('cart')} className="relative p-4 bg-indigo-950 text-white rounded-full shadow-xl">
+                    <ShoppingBag size={20} />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-purple-400 text-white text-[9px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white dark:border-slate-950">{cartCount}</span>
+                    )}
+                  </button>
+                </div>
+                <button onClick={() => handleNav('products')} className="w-full bg-indigo-950 text-white py-6 rounded-full font-bold uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-purple-600 transition-all">
+                  Shop The Palette
+                </button>
               </div>
             </motion.div>
           </div>
@@ -906,7 +883,7 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) =>
         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Palette
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-32">
         <div className="space-y-6">
           <div className="aspect-square rounded-[4rem] overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 shadow-2xl">
             <img src={selectedImage} className="w-full h-full object-cover" alt={product.name} />
@@ -964,6 +941,25 @@ const ProductDetailPage = ({ product, addToCart, addingId, onNavigate }: any) =>
               {addingId === product.id ? 'Adding to Bag...' : 'Add to Shopping Bag'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Related Products Section */}
+      <div className="border-t border-slate-100 dark:border-slate-800 pt-32">
+        <div className="flex items-center justify-between mb-16">
+          <h2 className="text-4xl font-serif font-bold text-indigo-950 dark:text-white">Complete the Ritual</h2>
+          <button onClick={() => onNavigate('products')} className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 border-b border-purple-400 pb-1">View All</button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {PRODUCTS.filter(p => p.id !== product.id).slice(0, 3).map(p => (
+            <ProductCard 
+              key={p.id} 
+              product={p} 
+              addToCart={addToCart} 
+              isAdding={addingId === p.id} 
+              onViewDetails={(prod: Product) => onNavigate(`product-${prod.id}`)} 
+            />
+          ))}
         </div>
       </div>
     </div>
